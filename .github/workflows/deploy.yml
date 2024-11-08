@@ -83,3 +83,4 @@ jobs:
           docker run -d -p 8080:80 synteck428/my-dataproject-webapp:latest && 
           docker run -d synteck428/my-dataproject-ingesta:latest && 
           docker run -d synteck428/my-dataproject-model:latest
+          "
