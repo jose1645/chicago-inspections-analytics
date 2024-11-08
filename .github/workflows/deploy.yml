@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main  # Cambia esto a la rakkma que desees usar para despliegue
+      - master  # Cambia esto a la rakkma que desees usar para despliegue
 
 jobs:
   build:
