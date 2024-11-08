@@ -22,7 +22,10 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t my-dataproject .  # Ajusta el nombre de la imagen según sea necesario
+          docker build -t my-dataproject-ingesta -f Dockerfile.ingesta .
+          docker build -t my-dataproject-model -f Dockerfile.model .
+          docker build -t my-dataproject-webapp -f Dockerfile.webapp .
+
 
       - name: Log in to Amazon ECR
         run: |
