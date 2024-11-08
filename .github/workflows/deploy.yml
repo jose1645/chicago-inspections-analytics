@@ -1,8 +1,10 @@
 name: CI/CD Pipeline
+
 on:
   push:
     branches:
-      - master  # Cambia a la rama que desees usar para desplegar
+      - main  # Cambia esto a la rama que desees usar para despliegue
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,32 +16,65 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.10'  # Ajusta según la versión de Python que necesites
+          python-version: '3.10'  # Ajusta según la versión que estés utilizando
 
       - name: Install dependencies
         run: |
           pip install -r requirements.txt  # Instala las dependencias de tu proyecto
 
-      - name: Build Docker image
+      # Construir imagen de ingesta
+      - name: Build Docker image for Ingesta
         run: |
           docker build -t my-dataproject-ingesta -f Dockerfile.ingesta .
+
+      # Construir imagen de modelo
+      - name: Build Docker image for Model
+        run: |
           docker build -t my-dataproject-model -f Dockerfile.model .
+
+      # Construir imagen de webapp
+      - name: Build Docker image for Webapp
+        run: |
           docker build -t my-dataproject-webapp -f Dockerfile.webapp .
 
+      # Log in to Docker Hub
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login --username synteck428 --password-stdin
 
-      - name: Log in to Amazon ECR
+      # Etiquetar y subir la imagen de ingesta
+      - name: Tag and push Ingesta Docker image
         run: |
-          echo "${{ secrets.AWS_ACCESS_KEY_ID }}" | docker login --username AWS --password-stdin your-account-id.dkr.ecr.your-region.amazonaws.com
+          docker tag my-dataproject-ingesta:latest synteck428/my-dataproject-ingesta:latest
+          docker push synteck428/my-dataproject-ingesta:latest
 
-      - name: Tag and push Docker image
+      # Etiquetar y subir la imagen de modelo
+      - name: Tag and push Model Docker image
         run: |
-          docker tag my-dataproject:latest your-account-id.dkr.ecr.your-region.amazonaws.com/my-dataproject:latest
-          docker push your-account-id.dkr.ecr.your-region.amazonaws.com/my-dataproject:latest
+          docker tag my-dataproject-model:latest synteck428/my-dataproject-model:latest
+          docker push synteck428/my-dataproject-model:latest
+
+      # Etiquetar y subir la imagen de webapp
+      - name: Tag and push Webapp Docker image
+        run: |
+          docker tag my-dataproject-webapp:latest synteck428/my-dataproject-webapp:latest
+          docker push synteck428/my-dataproject-webapp:latest
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Deploy to AWS EC2
+      - name: Decode SSH Key
+        run: echo "${{ secrets.EC2_SSH_KEY }}" | base64 --decode > key.pem
+
+      - name: Copy files and start applications on EC2
         run: |
-          ssh -o StrictHostKeyChecking=no -i your-key.pem ec2-user@your-ec2-public-ip "docker pull your-account-id.dkr.ecr.your-region.amazonaws.com/my-dataproject:latest && docker run -d -p 80:80 your-account-id.dkr.ecr.your-region.amazonaws.com/my-dataproject:latest"
+          chmod 400 key.pem  # Asegúrate de que la clave tiene los permisos correctos
+          scp -i key.pem -o StrictHostKeyChecking=no -r ./ my-username@your-ec2-public-ip:/path/to/deployment/directory
+          ssh -i key.pem -o StrictHostKeyChecking=no my-username@your-ec2-public-ip "
+            docker pull synteck428/my-dataproject-ingesta:latest &&
+            docker pull synteck428/my-dataproject-model:latest &&
+            docker pull synteck428/my-dataproject-webapp:latest &&
+            docker run -d -p 8080:80 synteck428/my-dataproject-webapp:latest && 
+            docker run -d synteck428/my-dataproject-ingesta:latest && 
+            docker run -d synteck428/my-dataproject-model:latest
+          "
