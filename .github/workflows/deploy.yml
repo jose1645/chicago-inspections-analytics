@@ -64,22 +64,17 @@ jobs:
       - name: Decode SSH Key
         run: echo "${{ secrets.EC2_SSH_KEY }}" | base64 --decode > key.pem
 
+      - name: Transfer .env to EC2
+        run: |
+          scp -i key.pem -o StrictHostKeyChecking=no .env ubuntu@${{ secrets.EC2_INSTANCE_IP }}:/home/ubuntu/.env
+
       - name: Deploy to EC2
         run: |
           chmod 400 key.pem  # Asegúrate de que la clave tiene los permisos correctos
           ssh -i key.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} << 'EOF'
-            # Configurar las variables de entorno desde el archivo .env
-            if [ -f /path/to/.env ]; then
-              export $(cat /path/to/.env | xargs)
-            fi
-
             # Pull the latest images
-            docker pull synteck428/my-dataproject-ingesta:latest
-            docker pull synteck428/my-dataproject-model:latest
-            docker pull synteck428/my-dataproject-webapp:latest
-            
-            # Ejecutar los contenedores
-            docker run -d -p 8080:80 --env-file ./.env synteck428/my-dataproject-webapp:latest
-            docker run -d --env-file ./.env synteck428/my-dataproject-ingesta:latest
-            docker run -d --env-file ./.env synteck428/my-dataproject-model:latest
+            docker-compose pull
+
+            # Start the services using docker-compose
+            docker-compose up -d
           EOF
