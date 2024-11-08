@@ -1,0 +1,42 @@
+name: CI/CD Pipeline
+on:
+  push:
+    branches:
+      - master  # Cambia a la rama que desees usar para desplegar
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'  # Ajusta según la versión de Python que necesites
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt  # Instala las dependencias de tu proyecto
+
+      - name: Build Docker image
+        run: |
+          docker build -t my-dataproject .  # Ajusta el nombre de la imagen según sea necesario
+
+      - name: Log in to Amazon ECR
+        run: |
+          echo "${{ secrets.AWS_ACCESS_KEY_ID }}" | docker login --username AWS --password-stdin your-account-id.dkr.ecr.your-region.amazonaws.com
+
+      - name: Tag and push Docker image
+        run: |
+          docker tag my-dataproject:latest your-account-id.dkr.ecr.your-region.amazonaws.com/my-dataproject:latest
+          docker push your-account-id.dkr.ecr.your-region.amazonaws.com/my-dataproject:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to AWS EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no -i your-key.pem ec2-user@your-ec2-public-ip "docker pull your-account-id.dkr.ecr.your-region.amazonaws.com/my-dataproject:latest && docker run -d -p 80:80 your-account-id.dkr.ecr.your-region.amazonaws.com/my-dataproject:latest"
