@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  data_ingest:
+    image: python:3.10  # Usa una imagen de Python
+    volumes:
+      - .:/app  # Monta el directorio actual en /app en el contenedor
+    working_dir: /app  # Establece el directorio de trabajo
+    environment:
+      - SOCRATA_USERNAME=${SOCRATA_USERNAME}
+      - SOCRATA_PASSWORD=${SOCRATA_PASSWORD}
+      - SOCRATA_APP_TOKEN=${SOCRATA_APP_TOKEN}
+    command: python ingest_data.py  # Cambia esto al script que quieras ejecutar

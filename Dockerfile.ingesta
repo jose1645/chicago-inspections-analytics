@@ -1,17 +1,24 @@
-# Dockerfile.ingesta
-
 # Usa una imagen base de Python
 FROM python:3.10-slim
 
-# Establece el directorio de trabajo
+# Establecer el directorio de trabajo
 WORKDIR /app
 
-# Copia los archivos necesarios
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+# Copiar el archivo de requisitos al contenedor
+COPY scripts/requirements.txt .
 
-# Copia el resto de los archivos de la aplicación
-COPY . .
+# Instalar virtualenv
+RUN pip install --no-cache-dir virtualenv
 
-# Comando para ejecutar el script de ingesta
-CMD ["python", "scripts/run_initial_ingest.py"]
+# Crear un entorno virtual
+RUN virtualenv venv
+
+# Activar el entorno virtual y instalar dependencias
+RUN . venv/bin/activate && pip install --no-cache-dir -r requirements.txt
+
+# Copiar el resto de los scripts al contenedor
+COPY scripts/ .
+
+
+# Establecer el comando por defecto para ejecutar tu aplicación
+CMD ["/bin/bash", "-c", "source venv/bin/activate && python ingest_data.py"]

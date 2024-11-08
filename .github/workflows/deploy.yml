@@ -68,10 +68,18 @@ jobs:
         run: |
           chmod 400 key.pem  # Asegúrate de que la clave tiene los permisos correctos
           ssh -i key.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} << 'EOF'
-            docker pull synteck428/my-dataproject-ingesta:latest &&
-            docker pull synteck428/my-dataproject-model:latest &&
-            docker pull synteck428/my-dataproject-webapp:latest &&
-            docker run -d -p 8080:80 synteck428/my-dataproject-webapp:latest && 
-            docker run -d synteck428/my-dataproject-ingesta:latest && 
-            docker run -d synteck428/my-dataproject-model:latest
+            # Configurar las variables de entorno desde el archivo .env
+            if [ -f /path/to/.env ]; then
+              export $(cat /path/to/.env | xargs)
+            fi
+
+            # Pull the latest images
+            docker pull synteck428/my-dataproject-ingesta:latest
+            docker pull synteck428/my-dataproject-model:latest
+            docker pull synteck428/my-dataproject-webapp:latest
+            
+            # Ejecutar los contenedores
+            docker run -d -p 8080:80 --env-file /path/to/.env synteck428/my-dataproject-webapp:latest
+            docker run -d --env-file /path/to/.env synteck428/my-dataproject-ingesta:latest
+            docker run -d --env-file /path/to/.env synteck428/my-dataproject-model:latest
           EOF
