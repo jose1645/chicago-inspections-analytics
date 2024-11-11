@@ -48,7 +48,7 @@ def ingest_data():
         client = Socrata('data.cityofchicago.org', socrata_app_token, socrata_username, socrata_password)
         results = client.get("4ijn-s7e5", limit=300000)
         
-        # Convertir resultados a DataFrame
+        # Convertir resultados a DataFrameads
         new_data = pd.DataFrame.from_records(results)
         new_data.columns = new_data.columns.str.strip().str.lower()
         
