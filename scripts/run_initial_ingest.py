@@ -56,7 +56,7 @@ def ingest_data():
         response = requests.get(url, auth=(socrata_username, socrata_password))
 
         # Convertir la respuesta a un DataFrame
-        new_data = pd.read_csv(pd.compat.StringIO(response.text))
+        new_data = pd.read_csv(pd.StringIO(response.text))
 
         # Limitar la ingesta a 300,000 registros
         new_data = new_data.head(300000)
@@ -71,7 +71,7 @@ def ingest_data():
         response = requests.get(url, auth=(socrata_username, socrata_password))
 
         # Convertir la respuesta a un DataFrame
-        combined_data = pd.read_csv(pd.compat.StringIO(response.text))
+        combined_data = pd.read_csv(pd.StringIO(response.text))
 
         # Limitar la ingesta a 300,000 registros
         combined_data = combined_data.head(300000)
