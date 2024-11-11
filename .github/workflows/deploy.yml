@@ -80,5 +80,5 @@ jobs:
             docker-compose pull
 
             # Start the services using docker-compose
-            docker-compose -f up -d
+            docker-compose up -d
           EOF
