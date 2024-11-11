@@ -68,10 +68,7 @@ jobs:
         run: chmod 600 key.pem
 
       - name: Deploy to EC2
-        env:
-          SOCRATA_PASSWORD: ${{ secrets.SOCRATA_PASSWORD }}
-          SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
-          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+  
         run: |
           if [ -z "${{ secrets.SOCRATA_USERNAME }}" ]; then
              echo "SOCRATA_USERNAME is not set or is empty"
@@ -94,9 +91,9 @@ jobs:
             # Ejecutar los contenedores actualizados, pasando las variables de entorno
             docker run -d --name ingesta \
               -e SOCRATA_USERNAME="${{secrets.SOCRATA_USERNAME}}" \
-              -e SOCRATA_PASSWORD="$SOCRATA_PASSWORD" \
-              -e SOCRATA_APP_TOKEN="$SOCRATA_APP_TOKEN" \
-              -e S3_BUCKET_NAME="$S3_BUCKET_NAME" \
+              -e SOCRATA_PASSWORD="${{ secrets.SOCRATA_PASSWORD }}" \
+              -e SOCRATA_APP_TOKEN="${{ secrets.SOCRATA_APP_TOKEN }}" \
+              -e S3_BUCKET_NAME="${{ secrets.S3_BUCKET_NAME }}" \
               synteck428/my-dataproject-ingesta:latest
 
             docker run -d --name model \

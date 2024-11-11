@@ -20,4 +20,4 @@ COPY scripts/ .
 RUN venv/bin/pip install --no-cache-dir -r requirements.txt
 
 # Establecer el comando por defecto para ejecutar tu aplicación
-CMD ["bash", "-c", "source venv/bin/activate && python check_env.py"]
+CMD ["bash", "-c", "source venv/bin/activate && python run_initial_ingest.py"]
