@@ -15,10 +15,10 @@ def cargar_datos(pickle_file_name):
 
 def obtener_ultimo_inspection_date(data):
     # Obtener el último valor de la columna 'inspection_date'
-    if 'inspection_date' in data.columns:
-        return data['inspection_date'].max()  # Devuelve la fecha más reciente
+    if 'inspection Date' in data.columns:
+        return data['inspection Date'].max()  # Devuelve la fecha más reciente
     else:
-        raise ValueError("La columna 'inspection_date' no existe en los datos.")
+        raise ValueError("La columna 'inspection Date' no existe en los datos.")
 
 def subir_a_s3(file_name, bucket_name, object_name):
     # Inicializa el cliente S3
@@ -78,7 +78,7 @@ def ingest_data():
         combined_data = combined_data.head(300000)
 
     # Asegurarse de que los datos estén ordenados por 'inspection_date'
-    combined_data.sort_values(by='inspection_date', ascending=False, inplace=True)
+    combined_data.sort_values(by='inspection Date', ascending=False, inplace=True)
 
     # Guardar el DataFrame combinado en Pickle
     with open(pickle_file_name, 'wb') as f:
