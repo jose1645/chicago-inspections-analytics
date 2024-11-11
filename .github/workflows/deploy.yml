@@ -70,12 +70,18 @@ jobs:
           scp -i key.pem -o StrictHostKeyChecking=no .env ubuntu@${{ secrets.EC2_INSTANCE_IP }}:/home/ubuntu/.env
 
       - name: Deploy to EC2
+        env:
+          SOCRATA_USERNAME: ${{ secrets.SOCRATA_USERNAME}}
+          SOCRATA_PASSWORD: ${{ secrets.SOCRATA_PASSWORD}}
+          SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN}}
+          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME}}
         run: |
 
           ssh -i key.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} << 'EOF'
             # Pull the latest images
+
             docker-compose pull
 
             # Start the services using docker-compose
-            docker-compose up -d
+            docker-compose -f up -d
           EOF
