@@ -63,6 +63,7 @@ jobs:
 
       - name: Decode SSH Key
         run: echo "${{ secrets.EC2_SSH_KEY }}" | base64 --decode > key.pem
+
       - name: Set permissions for SSH key
         run: chmod 600 key.pem
 
@@ -80,6 +81,7 @@ jobs:
              echo "SOCRATA_USERNAME is set"
           fi
 
+          # Ejecutar el bloque SSH con variables de entorno
           ssh -i key.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} << 'EOF'
             # Descargar las últimas imágenes de Docker
             docker pull synteck428/my-dataproject-ingesta:latest
@@ -90,8 +92,17 @@ jobs:
             docker stop ingesta model webapp || true
             docker rm ingesta model webapp || true
 
-            # Ejecutar los contenedores actualizados
-            docker run -d --name ingesta -e SOCRATA_USERNAME=$SOCRATA_USERNAME -e SOCRATA_PASSWORD=$SOCRATA_PASSWORD -e SOCRATA_APP_TOKEN=$SOCRATA_APP_TOKEN -e S3_BUCKET_NAME=$S3_BUCKET_NAME synteck428/my-dataproject-ingesta:latest
-            docker run -d --name model synteck428/my-dataproject-model:latest
-            docker run -d --name webapp -p 80:80 synteck428/my-dataproject-webapp:latest
+            # Ejecutar los contenedores actualizados, pasando las variables de entorno
+            docker run -d --name ingesta \
+              -e SOCRATA_USERNAME="${SOCRATA_USERNAME}" \
+              -e SOCRATA_PASSWORD="${SOCRATA_PASSWORD}" \
+              -e SOCRATA_APP_TOKEN="${SOCRATA_APP_TOKEN}" \
+              -e S3_BUCKET_NAME="${S3_BUCKET_NAME}" \
+              synteck428/my-dataproject-ingesta:latest
+
+            docker run -d --name model \
+              synteck428/my-dataproject-model:latest
+
+            docker run -d --name webapp -p 80:80 \
+              synteck428/my-dataproject-webapp:latest
           EOF
