@@ -101,4 +101,10 @@ jobs:
 
             docker run -d --name webapp -p 80:80 \
               synteck428/my-dataproject-webapp:latest
+
+
+
+            docker image prune  # Elimina imágenes no asociadas a ningún contenedor en ejecución
+            docker system prune --volumes
+
           EOF
