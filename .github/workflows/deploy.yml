@@ -94,7 +94,7 @@ jobs:
 
             # Ejecutar los contenedores actualizados, pasando las variables de entorno
             docker run -d --name ingesta \
-              -e SOCRATA_USERNAME="$SOCRATA_USERNAME" \
+              -e SOCRATA_USERNAME="${{secrets.SOCRATA_USERNAME}}" \
               -e SOCRATA_PASSWORD="$SOCRATA_PASSWORD" \
               -e SOCRATA_APP_TOKEN="$SOCRATA_APP_TOKEN" \
               -e S3_BUCKET_NAME="$S3_BUCKET_NAME" \
