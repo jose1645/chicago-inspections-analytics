@@ -76,9 +76,10 @@ def ingest_data():
 
         # Limitar la ingesta a 300,000 registros
         combined_data = combined_data.head(300000)
+        print(combined_data.columns)
 
     # Asegurarse de que los datos estén ordenados por 'inspection_date'
-    combined_data.sort_values(by='inspection Date', ascending=False, inplace=True)
+    combined_data.sort_values(by='inspection_date', ascending=False, inplace=True)
 
     # Guardar el DataFrame combinado en Pickle
     with open(pickle_file_name, 'wb') as f:
