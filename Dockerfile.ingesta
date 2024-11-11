@@ -13,12 +13,11 @@ RUN pip install --no-cache-dir virtualenv
 # Crear un entorno virtual
 RUN virtualenv venv
 
-# Activar el entorno virtual y instalar dependencias
-RUN . venv/bin/activate && pip install --no-cache-dir -r requirements.txt
-
 # Copiar el resto de los scripts al contenedor
 COPY scripts/ .
 
+# Instalar las dependencias dentro del entorno virtual
+RUN venv/bin/pip install --no-cache-dir -r requirements.txt
 
 # Establecer el comando por defecto para ejecutar tu aplicación
-CMD ["/bin/bash", "-c", "source venv/bin/activate && python run_initial_ingest.py"]
+CMD ["bash", "-c", "source venv/bin/activate && python run_initial_ingest.py"]
