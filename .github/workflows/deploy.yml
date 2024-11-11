@@ -32,7 +32,7 @@ jobs:
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login --username synteck428 --password-stdin
 
-      # Etiquetar y subir la imagen de ingesta
+      # Etiquetar y subir la imagen de ingestal{ñl}
       - name: Tag and push Ingesta Docker image
         run: |
           docker tag my-dataproject-ingesta:latest synteck428/my-dataproject-ingesta:latest
