@@ -7,11 +7,6 @@ services:
       SOCRATA_PASSWORD: ${SOCRATA_PASSWORD}
       SOCRATA_APP_TOKEN: ${SOCRATA_APP_TOKEN}
       S3_BUCKET_NAME: ${S3_BUCKET_NAME}
-
-
-
-
-
    
     ports:
       - "8080:80"

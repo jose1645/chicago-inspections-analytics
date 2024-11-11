@@ -73,6 +73,9 @@ jobs:
           SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
           S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
         run: |
+          echo "SOCRATA_USERNAME: $SOCRATA_USERNAME"
+          echo "S3_BUCKET_NAME: $S3_BUCKET_NAME"
+
           ssh -i key.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} << 'EOF'
             # Descargar las últimas imágenes de Docker
             docker pull synteck428/my-dataproject-ingesta:latest
