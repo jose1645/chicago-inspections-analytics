@@ -73,8 +73,12 @@ jobs:
           SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
           S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
         run: |
-          echo "SOCRATA_USERNAME: $SOCRATA_USERNAME"
-          echo "S3_BUCKET_NAME: $S3_BUCKET_NAME"
+          if [ -z "${{ secrets.SOCRATA_USERNAME }}" ]; then
+             echo "SOCRATA_USERNAME is not set or is empty"
+             exit 1  # Esto falla el job si la variable no está definida
+          else
+             echo "SOCRATA_USERNAME is set"
+          fi
 
           ssh -i key.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} << 'EOF'
             # Descargar las últimas imágenes de Docker
