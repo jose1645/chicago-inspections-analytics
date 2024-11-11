@@ -48,7 +48,7 @@ def ingest_data():
         new_data = pd.DataFrame.from_records(results)
         new_data.columns = new_data.columns.str.strip().str.lower()
         
-        # Combinar los datos existentes y nuevos
+        # Combinar los datos existentes y nuevos,m.
         combined_data = pd.concat([existing_data, new_data])
 
     else:
