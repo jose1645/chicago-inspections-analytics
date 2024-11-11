@@ -53,7 +53,7 @@ def ingest_data():
 
         # Realizar la ingesta de datos desde la API
         print("Realizando la ingesta de datos desde la API...")
-        url = "https://sandbox.demo.socrata.com/api/views/tu_endpoint.csv"  # Cambia esto al endpoint deseado
+        url = "https://data.cityofchicago.org/resource/4ijn-s7e5.csv"  # Cambia esto al endpoint deseado
         response = requests.get(url, auth=(socrata_username, socrata_password))
 
         # Convertir la respuesta a un DataFrame
