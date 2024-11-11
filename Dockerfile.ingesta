@@ -21,4 +21,4 @@ COPY scripts/ .
 
 
 # Establecer el comando por defecto para ejecutar tu aplicación
-CMD ["/bin/bash", "-c", "source venv/bin/activate && python ingest_data.py"]
+CMD ["/bin/bash", "-c", "source venv/bin/activate && python run_initial_ingest.py"]
