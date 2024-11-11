@@ -1,9 +1,7 @@
 import os
 import pickle
 import pandas as pd
-import requests
 import boto3
-import io
 from sodapy import Socrata
 
 def verificar_archivo(pickle_file_name):
@@ -39,40 +37,28 @@ def ingest_data():
 
     if verificar_archivo(pickle_file_name):
         existing_data = cargar_datos(pickle_file_name)
-        print("Archivo existente encontrado.")
-
-        # Asegurar consistencia en los nombres de columnas
         existing_data.columns = existing_data.columns.str.strip().str.lower()
-
         ultimo_inspection_date = obtener_ultimo_inspection_date(existing_data)
-        print(f"Última fecha de inspección: {ultimo_inspection_date}")
 
         print("Realizando la ingesta de datos desde la API...")
         client = Socrata('data.cityofchicago.org', socrata_app_token, socrata_username, socrata_password)
-        results = client.get("4ijn-s7e5", limit=200)
-
+        results = client.get("4ijn-s7e5", limit=300000)
+        
+        # Convertir resultados a DataFrame
         new_data = pd.DataFrame.from_records(results)
-        
-        # Asegurar consistencia en los nombres de columnas
         new_data.columns = new_data.columns.str.strip().str.lower()
-        
-        new_data = new_data.head(300000)
         
         # Combinar los datos existentes y nuevos
         combined_data = pd.concat([existing_data, new_data])
 
     else:
         print("El archivo no existe. Realizando la ingesta de datos desde la API...")
-        url = "https://sandbox.demo.socrata.com/api/views/tu_endpoint.csv"
-        response = requests.get(url, auth=(socrata_username, socrata_password))
-        
-        combined_data = pd.read_csv(io.StringIO(response.text))
+        client = Socrata('data.cityofchicago.org', socrata_app_token, socrata_username, socrata_password)
+        results = client.get("4ijn-s7e5", limit=300000)
 
-        # Asegurar consistencia en los nombres de columnas
+        # Convertir resultados a DataFrame
+        combined_data = pd.DataFrame.from_records(results)
         combined_data.columns = combined_data.columns.str.strip().str.lower()
-        
-        combined_data = combined_data.head(300000)
-        print(combined_data.columns)
 
     # Verificar si 'inspection_date' está en las columnas antes de ordenar
     if 'inspection_date' in combined_data.columns:
@@ -81,6 +67,7 @@ def ingest_data():
         print("La columna 'inspection_date' no se encuentra en combined_data")
         raise KeyError("La columna 'inspection_date' no está presente en los datos.")
 
+    # Guardar el DataFrame combinado en Pickle
     with open(pickle_file_name, 'wb') as f:
         pickle.dump(combined_data, f)
 
