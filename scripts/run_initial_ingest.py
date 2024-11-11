@@ -54,7 +54,7 @@ def ingest_data():
     else:
         print("El archivo no existe. Realizando la ingesta de datos desde la API...")
         client = Socrata('data.cityofchicago.org', socrata_app_token, socrata_username, socrata_password)
-        results = client.get("4ijn-s7e5", limit=300000)
+        results = client.get("4ijn-s7e5", limit=10000)
 
         # Convertir resultados a DataFrame
         combined_data = pd.DataFrame.from_records(results)
