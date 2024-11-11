@@ -20,7 +20,7 @@ def obtener_ultimo_inspection_date(data):
 def subir_a_s3(file_name, bucket_name, object_name):
     s3_client = boto3.client(
         's3',             
-        aws_access_key = os.getenv("AWS_ACCESS_KEY_ID"),    
+        aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID"),    
         aws_secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")   
                              )
     s3_client.upload_file(file_name, bucket_name, object_name)
