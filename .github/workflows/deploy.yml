@@ -68,17 +68,23 @@ jobs:
 
       - name: Deploy to EC2
         env:
-          SOCRATA_USERNAME: ${{ secrets.SOCRATA_USERNAME}}
-          SOCRATA_PASSWORD: ${{ secrets.SOCRATA_PASSWORD}}
-          SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN}}
-          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME}}
+          SOCRATA_USERNAME: ${{ secrets.SOCRATA_USERNAME }}
+          SOCRATA_PASSWORD: ${{ secrets.SOCRATA_PASSWORD }}
+          SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
+          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
         run: |
-
           ssh -i key.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} << 'EOF'
-            # Pull the latest images
+            # Descargar las últimas imágenes de Docker
+            docker pull synteck428/my-dataproject-ingesta:latest
+            docker pull synteck428/my-dataproject-model:latest
+            docker pull synteck428/my-dataproject-webapp:latest
 
-            docker-compose pull
+            # Detener y eliminar contenedores anteriores
+            docker stop ingesta model webapp || true
+            docker rm ingesta model webapp || true
 
-            # Start the services using docker-compose
-            docker-compose up -d
+            # Ejecutar los contenedores actualizados
+            docker run -d --name ingesta -e SOCRATA_USERNAME=$SOCRATA_USERNAME -e SOCRATA_PASSWORD=$SOCRATA_PASSWORD -e SOCRATA_APP_TOKEN=$SOCRATA_APP_TOKEN -e S3_BUCKET_NAME=$S3_BUCKET_NAME synteck428/my-dataproject-ingesta:latest
+            docker run -d --name model synteck428/my-dataproject-model:latest
+            docker run -d --name webapp -p 80:80 synteck428/my-dataproject-webapp:latest
           EOF
