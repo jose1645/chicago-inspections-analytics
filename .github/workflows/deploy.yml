@@ -32,7 +32,7 @@ jobs:
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login --username synteck428 --password-stdin
 
-      # Etiquetar y subir la imagen de ingestal{ñl}
+      # Etiquetar y subir la imagen de ingesta
       - name: Tag and push Ingesta Docker image
         run: |
           docker tag my-dataproject-ingesta:latest synteck428/my-dataproject-ingesta:latest
@@ -68,7 +68,6 @@ jobs:
         run: chmod 600 key.pem
 
       - name: Deploy to EC2
-  
         run: |
           if [ -z "${{ secrets.SOCRATA_USERNAME }}" ]; then
              echo "SOCRATA_USERNAME is not set or is empty"
@@ -95,8 +94,7 @@ jobs:
               -e SOCRATA_APP_TOKEN="${{ secrets.SOCRATA_APP_TOKEN }}" \
               -e S3_BUCKET_NAME="${{ secrets.S3_BUCKET_NAME }}" \
               -e AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-              -e AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY}}" 
-
+              -e AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
               synteck428/my-dataproject-ingesta:latest
 
             docker run -d --name model \
@@ -105,9 +103,6 @@ jobs:
             docker run -d --name webapp -p 80:80 \
               synteck428/my-dataproject-webapp:latest
 
-
-
-            docker image prune  # Elimina imágenes no asociadas a ningún contenedor en ejecución
-            docker system prune --volumes
-
+            docker image prune -f  # Elimina imágenes no asociadas a ningún contenedor en ejecución
+            docker system prune --volumes -f
           EOF
