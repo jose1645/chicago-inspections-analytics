@@ -3,6 +3,7 @@ import pickle
 import pandas as pd
 import boto3
 from sodapy import Socrata
+from datetime import datetime, timedelta
 
 def verificar_archivo(pickle_file_name):
     return os.path.exists(pickle_file_name)
@@ -19,10 +20,10 @@ def obtener_ultimo_inspection_date(data):
 
 def subir_a_s3(file_name, bucket_name, object_name):
     s3_client = boto3.client(
-        's3',             
-        aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID"),    
-        aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")   
-                             )
+        's3',
+        aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+        aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY")
+    )
     s3_client.upload_file(file_name, bucket_name, object_name)
     print(f"Datos subidos a S3 en el bucket '{bucket_name}' con el nombre '{object_name}'.")
 
@@ -39,25 +40,29 @@ def ingest_data():
     pickle_file_name = "ingested_data.pkl"
     new_data = pd.DataFrame()
 
+    # Cliente de la API de Socrata
+    client = Socrata('data.cityofchicago.org', socrata_app_token, socrata_username, socrata_password)
+
     if verificar_archivo(pickle_file_name):
         existing_data = cargar_datos(pickle_file_name)
         existing_data.columns = existing_data.columns.str.strip().str.lower()
-        ultimo_inspection_date = obtener_ultimo_inspection_date(existing_data)
-
-        print("Realizando la ingesta de datos desde la API...")
-        client = Socrata('data.cityofchicago.org', socrata_app_token, socrata_username, socrata_password)
-        results = client.get("4ijn-s7e5", limit=300000)
         
-        # Convertir resultados a DataFrameads
+        # Obtener la última fecha de inspección y aplicar un "buffer" de 2 días
+        ultimo_inspection_date = obtener_ultimo_inspection_date(existing_data)
+        buffer_date = (datetime.strptime(ultimo_inspection_date, '%Y-%m-%d') - timedelta(days=2)).strftime('%Y-%m-%d')
+
+        print("Realizando la ingesta de datos incrementales desde la API...")
+        results = client.get("4ijn-s7e5", where=f"inspection_date >= '{buffer_date}'", limit=30000)
+
+        # Convertir resultados a DataFrame
         new_data = pd.DataFrame.from_records(results)
         new_data.columns = new_data.columns.str.strip().str.lower()
         
-        # Combinar los datos existentes y nuevos,m.
-        combined_data = pd.concat([existing_data, new_data])
+        # Combinar los datos existentes y nuevos, eliminando duplicados
+        combined_data = pd.concat([existing_data, new_data]).drop_duplicates().dropna()
 
     else:
-        print("El archivo no existe. Realizando la ingesta de datos desde la API...")
-        client = Socrata('data.cityofchicago.org', socrata_app_token, socrata_username, socrata_password)
+        print("El archivo no existe. Realizando la ingesta de datos inicial desde la API...")
         results = client.get("4ijn-s7e5", limit=10000)
 
         # Convertir resultados a DataFrame

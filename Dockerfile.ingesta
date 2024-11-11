@@ -1,6 +1,9 @@
 # Usa una imagen base de Python
 FROM python:3.10-slim
 
+# Instalar cron
+RUN apt-get update && apt-get install -y cron
+
 # Establecer el directorio de trabajo
 WORKDIR /app
 
@@ -19,5 +22,14 @@ COPY scripts/ .
 # Instalar las dependencias dentro del entorno virtual
 RUN venv/bin/pip install --no-cache-dir -r requirements.txt
 
-# Establecer el comando por defecto para ejecutar tu aplicación
-CMD ["bash", "-c", "source venv/bin/activate && python run_initial_ingest.py"]
+# Crear un archivo crontab para ejecutar el script cada hora
+RUN echo "0 * * * * /app/venv/bin/python /app/ingest.py >> /var/log/cron.log 2>&1" > /etc/cron.d/ingest_cron
+
+# Dar permisos de ejecución al archivo crontab
+RUN chmod 0644 /etc/cron.d/ingest_cron
+
+# Aplicar el cron job y asegurarse de que cron.log exista
+RUN crontab /etc/cron.d/ingest_cron && touch /var/log/cron.log
+
+# Comando para iniciar cron y el log
+CMD ["bash", "-c", "cron && tail -f /var/log/cron.log"]
