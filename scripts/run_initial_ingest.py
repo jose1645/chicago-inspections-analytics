@@ -4,6 +4,7 @@ import pandas as pd
 import requests
 import boto3
 import io  # Importa el módulo io que contiene StringIO
+from sodapy import Socrata
 
 def verificar_archivo(pickle_file_name):
     return os.path.exists(pickle_file_name)
@@ -53,11 +54,19 @@ def ingest_data():
 
         # Realizar la ingesta de datos desde la API
         print("Realizando la ingesta de datos desde la API...")
-        url = "https://data.cityofchicago.org/resource/4ijn-s7e5.csv"  # Cambia esto al endpoint deseado
-        response = requests.get(url, auth=(socrata_username, socrata_password))
+        
+        
+        client = Socrata('data.cityofchicago.org',
+                socrata_app_token,
+                  socrata_username,
+                  socrata_password
+                  )
 
+        results = client.get("4ijn-s7e5", limit=200)
+
+    
         # Convertir la respuesta a un DataFrame
-        new_data = pd.read_csv(io.StringIO(response.text))
+        new_data = pd.read_csv(io.StringIO(results.text))
 
         # Limitar la ingesta a 300,000 registros
         new_data = new_data.head(300000)
