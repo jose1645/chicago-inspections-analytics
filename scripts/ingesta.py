@@ -13,9 +13,6 @@ socrata_app_token = os.getenv("SOCRATA_APP_TOKEN")
 aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
 aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 
-# Validar que las variables de entorno esenciales estén configuradas
-if not all([s3_bucket, socrata_app_token, aws_access_key_id, aws_secret_access_key]):
-    raise ValueError("Algunas variables de entorno esenciales no están configuradas. Revisa el archivo .env.")
 
 # Función para verificar si existe el archivo Pickle
 def verificar_archivo(pickle_file_name):
