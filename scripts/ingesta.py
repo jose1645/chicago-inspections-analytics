@@ -83,7 +83,7 @@ def guardar_fecha_ultimo_proceso(fecha):
 # Función principal para la ingesta y almacenamiento
 def ingest_data():
     client = get_client()
-    fecha_hoy = datetime.today().strftime('%Y-%m-%d')
+    fecha_hoy = datetime.today().strftime('%Y-%m-%dT%H-%M-%S')
 
     # Verificar acceso a S3
     if not verificar_acceso_s3(s3_bucket):
@@ -98,7 +98,7 @@ def ingest_data():
         new_data = ingesta_consecutiva(client, fecha_ultimo_proceso)
         new_data.columns = new_data.columns.str.strip().str.lower()
 
-        # Generar nombre del archivo S3 para la ingesta consecutiva con fecha dinámica
+        # Generar nombre del archivo S3 para la ingesta consecutiva con fecha dinámica en cada archivo
         s3_object_name = f"ingesta/consecutiva/inspecciones-consecutivas-{fecha_hoy}.pkl"
         guardar_ingesta(s3_bucket, s3_object_name, new_data)
 
