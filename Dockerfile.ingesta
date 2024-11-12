@@ -23,7 +23,7 @@ COPY scripts/ .
 RUN venv/bin/pip install --no-cache-dir -r requirements.txt
 
 # Crear un archivo crontab para ejecutar el script cada hora
-RUN echo "* * * * * /app/venv/bin/python /app/ingesta.py >> /var/log/cron.log 2>&1" > /etc/cron.d/ingest_cron
+RUN echo "* * * * * AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} S3_BUCKET_NAME=${S3_BUCKET_NAME} SOCRATA_USERNAME=${SOCRATA_USERNAME} SOCRATA_PASSWORD=${SOCRATA_PASSWORD} SOCRATA_APP_TOKEN=${SOCRATA_APP_TOKEN} /app/venv/bin/python /app/ingesta.py >> /var/log/cron.log 2>&1" > /etc/cron.d/ingest_cron
 # Dar permisos de ejecución al archivo crontab
 RUN chmod 0644 /etc/cron.d/ingest_cron
 
