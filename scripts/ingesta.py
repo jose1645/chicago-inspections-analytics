@@ -4,7 +4,10 @@ import pandas as pd
 import boto3
 from sodapy import Socrata
 from datetime import datetime, timedelta
-
+# Imprimir las variables de entorno para verificar si están configuradas correctamente
+print("AWS_ACCESS_KEY_ID:", os.getenv("AWS_ACCESS_KEY_ID"))
+print("AWS_SECRET_ACCESS_KEY:", os.getenv("AWS_SECRET_ACCESS_KEY"))
+print("S3_BUCKET_NAME:", os.getenv("S3_BUCKET_NAME"))
 # Obtener las variables de entorno
 s3_bucket = os.getenv("S3_BUCKET_NAME")
 socrata_username = os.getenv("SOCRATA_USERNAME")
