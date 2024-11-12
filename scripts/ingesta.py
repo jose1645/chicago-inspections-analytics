@@ -67,7 +67,7 @@ def ingest_data():
     # Nombre del archivo Pickle local
     pickle_file_name = "ingested_data.pkl"
     client = get_client()
-    fecha_hoy = datetime.today().strftime('%Y-%m-%d')
+    fecha_hoy = datetime.today().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
 
     # Verificar si es ingesta inicial o consecutiva
     if verificar_archivo(pickle_file_name):
@@ -76,7 +76,7 @@ def ingest_data():
         
         # Obtener la última fecha de inspección y aplicar un "buffer" de 2 días
         ultimo_inspection_date = obtener_ultimo_inspection_date(existing_data)
-        buffer_date = (datetime.strptime(ultimo_inspection_date, '%Y-%m-%d') - timedelta(days=2)).strftime('%Y-%m-%d')
+        buffer_date = (datetime.strptime(ultimo_inspection_date, '%Y-%m-%d') - timedelta(days=2)).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
 
         # Realizar ingesta consecutiva
         new_data = ingesta_consecutiva(client, buffer_date)
