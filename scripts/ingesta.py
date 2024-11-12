@@ -64,6 +64,7 @@ def ingesta_consecutiva(client, fecha_inicio, limit=1000):
 
 # Función para verificar acceso a S3
 def verificar_acceso_s3(bucket_name):
+    print(s3_bucket,aws_access_key_id,aws_access_key_id)
     try:
         s3 = get_s3_resource()
         # Intentar listar los objetos en el bucket
