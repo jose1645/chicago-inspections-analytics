@@ -6,6 +6,7 @@ from sodapy import Socrata
 from datetime import datetime
 import time
 
+# Intervalo de tiempo entre ingestas en segundos
 interval = 60
 s3_bucket = os.getenv("S3_BUCKET_NAME")
 socrata_username = os.getenv("SOCRATA_USERNAME")
@@ -36,10 +37,11 @@ def guardar_ingesta(bucket_name, ruta, data_frame):
     s3.Object(bucket_name, ruta).put(Body=pickle_data)
     print(f"Datos guardados en {bucket_name}/{ruta}")
 
-# Función para la ingesta inicial
+# Función para la ingesta inicial, limitando a datos hasta el año 2022
 def ingesta_inicial(client, limit=300000):
-    print("Realizando la ingesta de datos inicial desde la API...")
-    results = client.get("4ijn-s7e5", limit=limit)
+    print("Realizando la ingesta de datos inicial hasta el año 2022 desde la API...")
+    query = "inspection_date < '2023-01-01T00:00:00'"
+    results = client.get("4ijn-s7e5", where=query, limit=limit)
     return pd.DataFrame.from_records(results)
 
 # Función para la ingesta consecutiva de datos
@@ -98,14 +100,18 @@ def ingest_data():
         new_data = ingesta_consecutiva(client, fecha_ultimo_proceso)
         new_data.columns = new_data.columns.str.strip().str.lower()
 
-        # Generar nombre del archivo S3 para la ingesta consecutiva con fecha dinámica en cada archivo
-        s3_object_name = f"ingesta/consecutiva/inspecciones-consecutivas-{fecha_hoy}.pkl"
-        guardar_ingesta(s3_bucket, s3_object_name, new_data)
+        # Verificar si hay datos nuevos antes de guardar en S3
+        if not new_data.empty:
+            # Generar nombre del archivo S3 para la ingesta consecutiva con fecha dinámica en cada archivo
+            s3_object_name = f"ingesta/consecutiva/inspecciones-consecutivas-{fecha_hoy}.pkl"
+            guardar_ingesta(s3_bucket, s3_object_name, new_data)
 
-        # Actualizar la fecha de la última inspección en el archivo de estado
-        if 'inspection_date' in new_data.columns:
-            ultima_fecha = new_data['inspection_date'].max()
-            guardar_fecha_ultimo_proceso(ultima_fecha)
+            # Actualizar la fecha de la última inspección en el archivo de estado
+            if 'inspection_date' in new_data.columns:
+                ultima_fecha = new_data['inspection_date'].max()
+                guardar_fecha_ultimo_proceso(ultima_fecha)
+        else:
+            print("No hay datos nuevos desde la última ingesta. No se generará un archivo.")
 
     else:
         # Ingesta inicial
@@ -121,6 +127,7 @@ def ingest_data():
             ultima_fecha = initial_data['inspection_date'].max()
             guardar_fecha_ultimo_proceso(ultima_fecha)
 
+# Ejecutar el proceso de ingesta en intervalos
 if __name__ == "__main__":
     while True:
         ingest_data()
