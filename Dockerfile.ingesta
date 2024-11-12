@@ -23,7 +23,7 @@ COPY scripts/ .
 RUN venv/bin/pip install --no-cache-dir -r requirements.txt
 
 # Crear un archivo crontab para ejecutar el script cada hora
-RUN echo "0 * * * * /app/venv/bin/python /app/ingest.py >> /var/log/cron.log 2>&1" > /etc/cron.d/ingest_cron
+RUN echo "0 * * * * /app/venv/bin/python /app/ingesta.py >> /var/log/cron.log 2>&1" > /etc/cron.d/ingest_cron
 
 # Dar permisos de ejecución al archivo crontab
 RUN chmod 0644 /etc/cron.d/ingest_cron
