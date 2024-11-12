@@ -3,19 +3,10 @@ import pickle
 import pandas as pd
 import boto3
 from sodapy import Socrata
-from datetime import datetime, timedelta
+from datetime import datetime
 import time
+
 interval = 60
-
-
-
-print(os.environ)
-print(os.environ.get("AWS_ACCESS_KEY_ID"))
-# Imprimir las variables de entorno para verificar si están configuradas correctamente
-print("AWS_ACCESS_KEY_ID:", os.getenv("AWS_ACCESS_KEY_ID"))
-print("AWS_SECRET_ACCESS_KEY:", os.getenv("AWS_SECRET_ACCESS_KEY"))
-print("S3_BUCKET_NAME:", os.getenv("S3_BUCKET_NAME"))
-# Obtener las variables de entorno
 s3_bucket = os.getenv("S3_BUCKET_NAME")
 socrata_username = os.getenv("SOCRATA_USERNAME")
 socrata_password = os.getenv("SOCRATA_PASSWORD")
@@ -23,21 +14,8 @@ socrata_app_token = os.getenv("SOCRATA_APP_TOKEN")
 aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
 aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 
-# Función para verificar si existe el archivo Pickle
-def verificar_archivo(pickle_file_name):
-    return os.path.exists(pickle_file_name)
-
-# Función para cargar datos desde el archivo Pickle
-def cargar_datos(pickle_file_name):
-    with open(pickle_file_name, 'rb') as f:
-        return pickle.load(f)
-
-# Función para obtener la última fecha de inspección en los datos
-def obtener_ultimo_inspection_date(data):
-    if 'inspection_date' in data.columns:
-        return data['inspection_date'].max()
-    else:
-        raise ValueError("La columna 'inspection_date' no existe en los datos.")
+# Archivo de estado para la última fecha procesada en S3
+estado_file_name = "estado/last_processed_date.pkl"
 
 # Función para obtener un cliente de la API de Socrata
 def get_client():
@@ -66,18 +44,15 @@ def ingesta_inicial(client, limit=300000):
 
 # Función para la ingesta consecutiva de datos
 def ingesta_consecutiva(client, fecha_inicio, limit=1000):
-    print("Realizando la ingesta de datos incrementales desde la API...")
-    # Asegurarnos de que la fecha esté en el formato correcto para la consulta
-    query = f"inspection_date >= '{fecha_inicio}'"
+    print(f"Realizando la ingesta incremental desde {fecha_inicio}...")
+    query = f"inspection_date > '{fecha_inicio}'"
     results = client.get("4ijn-s7e5", where=query, limit=limit)
     return pd.DataFrame.from_records(results)
 
 # Función para verificar acceso a S3
 def verificar_acceso_s3(bucket_name):
-    print(s3_bucket,aws_access_key_id,aws_access_key_id)
     try:
         s3 = get_s3_resource()
-        # Intentar listar los objetos en el bucket
         for obj in s3.Bucket(bucket_name).objects.all():
             print(f"Acceso confirmado a S3. Objeto: {obj.key}")
         return True
@@ -85,63 +60,68 @@ def verificar_acceso_s3(bucket_name):
         print(f"Error al acceder a S3: {e}")
         return False
 
+# Función para cargar la última fecha procesada desde el archivo de estado en S3
+def cargar_fecha_ultimo_proceso():
+    s3 = get_s3_resource()
+    try:
+        obj = s3.Object(s3_bucket, estado_file_name)
+        with obj.get()['Body'] as f:
+            fecha = pickle.load(f)
+            print(f"Última fecha procesada cargada: {fecha}")
+            return fecha
+    except s3.meta.client.exceptions.NoSuchKey:
+        print("Archivo de estado no encontrado, iniciando ingesta completa.")
+        return None
+
+# Función para guardar la última fecha procesada en el archivo de estado en S3
+def guardar_fecha_ultimo_proceso(fecha):
+    s3 = get_s3_resource()
+    pickle_data = pickle.dumps(fecha)
+    s3.Object(s3_bucket, estado_file_name).put(Body=pickle_data)
+    print(f"Última fecha procesada actualizada a {fecha}")
+
 # Función principal para la ingesta y almacenamiento
 def ingest_data():
-    # Nombre del archivo Pickle local
-    pickle_file_name = "ingested_data.pkl"
     client = get_client()
-    fecha_hoy = datetime.today().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+    fecha_hoy = datetime.today().strftime('%Y-%m-%d')
 
     # Verificar acceso a S3
     if not verificar_acceso_s3(s3_bucket):
         print("No se pudo acceder a S3. Deteniendo el proceso de ingesta.")
         return
 
-    # Verificar si es ingesta inicial o consecutiva
-    if verificar_archivo(pickle_file_name):
-        existing_data = cargar_datos(pickle_file_name)
-        existing_data.columns = existing_data.columns.str.strip().str.lower()
-        
-        # Obtener la última fecha de inspección y aplicar un "buffer" de 2 días
-        ultimo_inspection_date = obtener_ultimo_inspection_date(existing_data)
-        # Asegurarnos de que la fecha esté en el formato correcto
-        buffer_date = (datetime.strptime(ultimo_inspection_date, '%Y-%m-%dT%H:%M:%S.%f') - timedelta(days=2)).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+    # Verificar si es una ingesta inicial o consecutiva
+    fecha_ultimo_proceso = cargar_fecha_ultimo_proceso()
 
-        # Realizar ingesta consecutiva
-        new_data = ingesta_consecutiva(client, buffer_date)
+    if fecha_ultimo_proceso:
+        # Ingesta consecutiva
+        new_data = ingesta_consecutiva(client, fecha_ultimo_proceso)
         new_data.columns = new_data.columns.str.strip().str.lower()
 
-        # Combinar los datos existentes y nuevos, eliminando duplicados y valores nulos
-        combined_data = pd.concat([existing_data, new_data]).drop_duplicates().dropna()
-
-        # Ruta para la ingesta consecutiva en S3
+        # Generar nombre del archivo S3 para la ingesta consecutiva con fecha dinámica
         s3_object_name = f"ingesta/consecutiva/inspecciones-consecutivas-{fecha_hoy}.pkl"
-    
-    else:
-        # Realizar ingesta inicial
-        combined_data = ingesta_inicial(client)
-        combined_data.columns = combined_data.columns.str.strip().str.lower()
+        guardar_ingesta(s3_bucket, s3_object_name, new_data)
 
-        # Ruta para la ingesta inicial en S3
+        # Actualizar la fecha de la última inspección en el archivo de estado
+        if 'inspection_date' in new_data.columns:
+            ultima_fecha = new_data['inspection_date'].max()
+            guardar_fecha_ultimo_proceso(ultima_fecha)
+
+    else:
+        # Ingesta inicial
+        initial_data = ingesta_inicial(client)
+        initial_data.columns = initial_data.columns.str.strip().str.lower()
+
+        # Generar nombre del archivo S3 para la ingesta inicial
         s3_object_name = f"ingesta/inicial/inspecciones-historicas-{fecha_hoy}.pkl"
+        guardar_ingesta(s3_bucket, s3_object_name, initial_data)
 
-    # Verificar si 'inspection_date' está en las columnas antes de ordenar
-    if 'inspection_date' in combined_data.columns:
-        combined_data.sort_values(by='inspection_date', ascending=False, inplace=True)
-    else:
-        raise KeyError("La columna 'inspection_date' no está presente en los datos.")
-
-    # Guardar el DataFrame combinado en Pickle
-    with open(pickle_file_name, 'wb') as f:
-        pickle.dump(combined_data, f)
-    
-    print(f"Datos descargados y guardados en {pickle_file_name}.")
-    
-    # Guardar en S3
-    guardar_ingesta(s3_bucket, s3_object_name, combined_data)
+        # Guardar la fecha de la última inspección en el archivo de estado
+        if 'inspection_date' in initial_data.columns:
+            ultima_fecha = initial_data['inspection_date'].max()
+            guardar_fecha_ultimo_proceso(ultima_fecha)
 
 if __name__ == "__main__":
     while True:
         ingest_data()
         time.sleep(interval)
-
