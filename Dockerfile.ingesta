@@ -22,13 +22,28 @@ COPY scripts/ .
 # Instalar las dependencias dentro del entorno virtual
 RUN venv/bin/pip install --no-cache-dir -r requirements.txt
 
-# Crear un archivo crontab para ejecutar el script cada hora
-RUN echo "* * * * * /app/venv/bin/python /app/ingesta.py >> /var/log/cron.log 2>&1" > /etc/cron.d/ingest_cron
+# Definir variables de entorno que serán usadas por cron
+ENV SOCRATA_USERNAME=${SOCRATA_USERNAME}
+ENV SOCRATA_PASSWORD=${SOCRATA_PASSWORD}
+ENV SOCRATA_APP_TOKEN=${SOCRATA_APP_TOKEN}
+ENV S3_BUCKET_NAME=${S3_BUCKET_NAME}
+ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+
+# Crear un archivo crontab con las variables de entorno y la tarea cron que activa el entorno virtual
+RUN echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> /etc/cron.d/ingest_cron && \
+    echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> /etc/cron.d/ingest_cron && \
+    echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> /etc/cron.d/ingest_cron && \
+    echo "SOCRATA_USERNAME=${SOCRATA_USERNAME}" >> /etc/cron.d/ingest_cron && \
+    echo "SOCRATA_PASSWORD=${SOCRATA_PASSWORD}" >> /etc/cron.d/ingest_cron && \
+    echo "SOCRATA_APP_TOKEN=${SOCRATA_APP_TOKEN}" >> /etc/cron.d/ingest_cron && \
+    echo '* * * * * . /app/venv/bin/activate && /app/venv/bin/python /app/ingesta.py >> /var/log/cron.log 2>&1' >> /etc/cron.d/ingest_cron
+
 # Dar permisos de ejecución al archivo crontab
 RUN chmod 0644 /etc/cron.d/ingest_cron
 
 # Aplicar el cron job y asegurarse de que cron.log exista
 RUN crontab /etc/cron.d/ingest_cron && touch /var/log/cron.log
 
-# Comando para iniciar cron y el log
-CMD ["bash", "-c", "cron && tail -f /var/log/cron.log"]
+# Comando para iniciar cron en modo foreground para que el contenedor siga activo
+CMD ["cron", "-f"]
