@@ -57,6 +57,7 @@ def ingesta_inicial(client, limit=300000):
 # Función para la ingesta consecutiva de datos
 def ingesta_consecutiva(client, fecha_inicio, limit=1000):
     print("Realizando la ingesta de datos incrementales desde la API...")
+    # Asegurarnos de que la fecha esté en el formato correcto para la consulta
     query = f"inspection_date >= '{fecha_inicio}'"
     results = client.get("4ijn-s7e5", where=query, limit=limit)
     return pd.DataFrame.from_records(results)
@@ -92,7 +93,8 @@ def ingest_data():
         
         # Obtener la última fecha de inspección y aplicar un "buffer" de 2 días
         ultimo_inspection_date = obtener_ultimo_inspection_date(existing_data)
-        buffer_date = (datetime.strptime(ultimo_inspection_date, '%Y-%m-%d') - timedelta(days=2)).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+        # Asegurarnos de que la fecha esté en el formato correcto
+        buffer_date = (datetime.strptime(ultimo_inspection_date, '%Y-%m-%dT%H:%M:%S.%f') - timedelta(days=2)).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
 
         # Realizar ingesta consecutiva
         new_data = ingesta_consecutiva(client, buffer_date)
