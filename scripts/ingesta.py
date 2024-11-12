@@ -4,6 +4,11 @@ import pandas as pd
 import boto3
 from sodapy import Socrata
 from datetime import datetime, timedelta
+import time
+interval = 60
+
+
+
 print(os.environ)
 print(os.environ.get("AWS_ACCESS_KEY_ID"))
 # Imprimir las variables de entorno para verificar si están configuradas correctamente
@@ -136,4 +141,7 @@ def ingest_data():
     guardar_ingesta(s3_bucket, s3_object_name, combined_data)
 
 if __name__ == "__main__":
-    ingest_data()
+    while True:
+        ingest_data()
+        time.sleep(interval)
+
