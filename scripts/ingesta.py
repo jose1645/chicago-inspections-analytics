@@ -13,6 +13,12 @@ socrata_app_token = os.getenv("SOCRATA_APP_TOKEN")
 aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
 aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 
+# Verificación de variables de entorno
+if not s3_bucket or not aws_access_key_id or not aws_secret_access_key:
+    raise ValueError("Las variables de entorno necesarias para S3 no están establecidas correctamente.")
+
+if not socrata_app_token or not socrata_username or not socrata_password:
+    raise ValueError("Las variables de entorno necesarias para Socrata no están establecidas correctamente.")
 
 # Función para verificar si existe el archivo Pickle
 def verificar_archivo(pickle_file_name):
@@ -82,7 +88,7 @@ def ingest_data():
         new_data = ingesta_consecutiva(client, buffer_date)
         new_data.columns = new_data.columns.str.strip().str.lower()
 
-        # Combinar los datos existentes y nuevos, eliminando duplicados
+        # Combinar los datos existentes y nuevos, eliminando duplicados y valores nulos
         combined_data = pd.concat([existing_data, new_data]).drop_duplicates().dropna()
 
         # Ruta para la ingesta consecutiva en S3
