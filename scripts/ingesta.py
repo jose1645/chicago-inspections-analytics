@@ -6,7 +6,7 @@ from sodapy import Socrata
 from datetime import datetime, timedelta
 
 # Obtener las variables de entorno
-s3_bucket = os.getenv("S3_BUCKET_NAME", "default-bucket-name")  # Default por si no están configuradas
+s3_bucket = os.getenv("S3_BUCKET_NAME")
 socrata_username = os.getenv("SOCRATA_USERNAME")
 socrata_password = os.getenv("SOCRATA_PASSWORD")
 socrata_app_token = os.getenv("SOCRATA_APP_TOKEN")
@@ -61,12 +61,29 @@ def ingesta_consecutiva(client, fecha_inicio, limit=1000):
     results = client.get("4ijn-s7e5", where=query, limit=limit)
     return pd.DataFrame.from_records(results)
 
+# Función para verificar acceso a S3
+def verificar_acceso_s3(bucket_name):
+    try:
+        s3 = get_s3_resource()
+        # Intentar listar los objetos en el bucket
+        for obj in s3.Bucket(bucket_name).objects.all():
+            print(f"Acceso confirmado a S3. Objeto: {obj.key}")
+        return True
+    except Exception as e:
+        print(f"Error al acceder a S3: {e}")
+        return False
+
 # Función principal para la ingesta y almacenamiento
 def ingest_data():
     # Nombre del archivo Pickle local
     pickle_file_name = "ingested_data.pkl"
     client = get_client()
     fecha_hoy = datetime.today().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+
+    # Verificar acceso a S3
+    if not verificar_acceso_s3(s3_bucket):
+        print("No se pudo acceder a S3. Deteniendo el proceso de ingesta.")
+        return
 
     # Verificar si es ingesta inicial o consecutiva
     if verificar_archivo(pickle_file_name):
