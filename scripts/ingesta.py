@@ -4,10 +4,6 @@ import pandas as pd
 import boto3
 from sodapy import Socrata
 from datetime import datetime, timedelta
-from dotenv import load_dotenv
-
-# Cargar las variables de entorno desde el archivo .env
-load_dotenv()
 
 # Obtener las variables de entorno
 s3_bucket = os.getenv("S3_BUCKET_NAME")
