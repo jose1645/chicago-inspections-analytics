@@ -37,7 +37,7 @@ RUN echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> /etc/cron.d/ingest_cron && 
     echo "SOCRATA_USERNAME=${SOCRATA_USERNAME}" >> /etc/cron.d/ingest_cron && \
     echo "SOCRATA_PASSWORD=${SOCRATA_PASSWORD}" >> /etc/cron.d/ingest_cron && \
     echo "SOCRATA_APP_TOKEN=${SOCRATA_APP_TOKEN}" >> /etc/cron.d/ingest_cron && \
-    echo '* * * * * . /app/venv/bin/activate && /app/venv/bin/python /app/ingesta.py >> /var/log/cron.log 2>&1' >> /etc/cron.d/ingest_cron
+    echo '* * * * * /bin/bash -c ". /app/venv/bin/activate && /app/venv/bin/python /app/ingesta.py" >> /var/log/cron.log 2>&1' >> /etc/cron.d/ingest_cron
 
 # Dar permisos de ejecución al archivo crontab
 RUN chmod 0644 /etc/cron.d/ingest_cron
