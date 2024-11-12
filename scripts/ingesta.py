@@ -6,7 +6,7 @@ from sodapy import Socrata
 from datetime import datetime, timedelta
 
 # Obtener las variables de entorno
-s3_bucket = os.getenv("S3_BUCKET_NAME")
+s3_bucket = os.getenv("S3_BUCKET_NAME", "default-bucket-name")  # Default por si no están configuradas
 socrata_username = os.getenv("SOCRATA_USERNAME")
 socrata_password = os.getenv("SOCRATA_PASSWORD")
 socrata_app_token = os.getenv("SOCRATA_APP_TOKEN")
