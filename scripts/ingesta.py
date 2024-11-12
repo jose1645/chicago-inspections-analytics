@@ -7,7 +7,7 @@ from datetime import datetime
 import time
 
 # Intervalo de tiempo entre ingestas en segundos
-interval = 60
+interval = 86400  # 86400 segundos equivalen a 1 día
 s3_bucket = os.getenv("S3_BUCKET_NAME")
 socrata_username = os.getenv("SOCRATA_USERNAME")
 socrata_password = os.getenv("SOCRATA_PASSWORD")
