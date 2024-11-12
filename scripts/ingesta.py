@@ -4,6 +4,8 @@ import pandas as pd
 import boto3
 from sodapy import Socrata
 from datetime import datetime, timedelta
+print(os.environ)
+print(os.environ.get("AWS_ACCESS_KEY_ID"))
 # Imprimir las variables de entorno para verificar si están configuradas correctamente
 print("AWS_ACCESS_KEY_ID:", os.getenv("AWS_ACCESS_KEY_ID"))
 print("AWS_SECRET_ACCESS_KEY:", os.getenv("AWS_SECRET_ACCESS_KEY"))
