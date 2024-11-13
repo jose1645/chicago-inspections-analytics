@@ -141,3 +141,8 @@ def ingest_data():
     logging.info("Ejecutando proceso de limpieza...")
     subprocess.run(["python", "/app/limpieza.py"])
     logging.info("Proceso de limpieza completado.")
+
+# Punto de entrada del programa
+if __name__ == "__main__":
+    logging.info("Iniciando el proceso completo de ingesta de datos.")
+    ingest_data()
