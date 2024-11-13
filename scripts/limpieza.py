@@ -80,7 +80,7 @@ def elimina_faltantes_latitud_longitud(df, columnas):
 
 def imputar_faltantes(df, columna, valor_imputar):
     logging.info(f"Imputando valores faltantes en la columna {columna}.")
-    df[columna].fillna(valor_imputar, inplace=True)
+    df[columna].fillna(valor_imputar)
     return df
 
 def transformar_enteros(df, columnas):
