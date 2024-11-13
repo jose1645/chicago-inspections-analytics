@@ -4,10 +4,11 @@ import pandas as pd
 import boto3
 from sodapy import Socrata
 from datetime import datetime
+import schedule
+import subprocess
 import time
 
-# Intervalo de tiempo entre ingestas en segundos
-interval = 86400  # 86400 segundos equivalen a 1 día
+# Variables de entorno y configuración
 s3_bucket = os.getenv("S3_BUCKET_NAME")
 socrata_username = os.getenv("SOCRATA_USERNAME")
 socrata_password = os.getenv("SOCRATA_PASSWORD")
@@ -102,33 +103,37 @@ def ingest_data():
 
         # Verificar si hay datos nuevos antes de guardar en S3
         if not new_data.empty:
-            # Generar nombre del archivo S3 para la ingesta consecutiva con fecha dinámica en cada archivo
             s3_object_name = f"ingesta/consecutiva/inspecciones-consecutivas-{fecha_hoy}.pkl"
             guardar_ingesta(s3_bucket, s3_object_name, new_data)
 
-            # Actualizar la fecha de la última inspección en el archivo de estado
             if 'inspection_date' in new_data.columns:
                 ultima_fecha = new_data['inspection_date'].max()
                 guardar_fecha_ultimo_proceso(ultima_fecha)
         else:
             print("No hay datos nuevos desde la última ingesta. No se generará un archivo.")
-
     else:
         # Ingesta inicial
         initial_data = ingesta_inicial(client)
         initial_data.columns = initial_data.columns.str.strip().str.lower()
 
-        # Generar nombre del archivo S3 para la ingesta inicial
         s3_object_name = f"ingesta/inicial/inspecciones-historicas-{fecha_hoy}.pkl"
         guardar_ingesta(s3_bucket, s3_object_name, initial_data)
 
-        # Guardar la fecha de la última inspección en el archivo de estado
         if 'inspection_date' in initial_data.columns:
             ultima_fecha = initial_data['inspection_date'].max()
             guardar_fecha_ultimo_proceso(ultima_fecha)
 
-# Ejecutar el proceso de ingesta en intervalos
+    # Ejecutar el script de limpieza tras completar la ingesta
+    print("Ejecutando proceso de limpieza...")
+    subprocess.run(["/app/venv/bin/python", "/app/limpieza.py"])
+    print("Limpieza completada.")
+
+# Configuración del programador para ejecutar cada día
+schedule.every(1).day.do(ingest_data)
+
+# Bucle de ejecución del programador, revisando cada 12 horas
 if __name__ == "__main__":
+    print("Iniciando el programador de ingesta y limpieza...")
     while True:
-        ingest_data()
-        time.sleep(interval)
+        schedule.run_pending()  # Ejecuta las tareas programadas
+        time.sleep(43200)       # Pausa de 12 horas (43,200 segundos)
