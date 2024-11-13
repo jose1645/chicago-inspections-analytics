@@ -44,7 +44,7 @@ jobs:
           docker tag my-dataproject-model:latest synteck428/my-dataproject-model:latest
           docker push synteck428/my-dataproject-model:latest
 
-      # Etiquetar y subir la imagen de webapp
+      # Etiquetar y subir la imagen de webappa
       - name: Tag and push Webapp Docker image
         run: |
           docker tag my-dataproject-webapp:latest synteck428/my-dataproject-webapp:latest
