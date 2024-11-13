@@ -124,11 +124,9 @@ def procesar_archivos(bucket, rutas):
 
 # Ejecución en bucle con espera de un día
 if __name__ == "__main__":
-    while True:
-        rutas_ingesta = ['ingesta/inicial', 'ingesta/consecutiva']
-        logging.info("Inicio de la ejecución de limpieza diaria")
-        procesar_archivos(s3_bucket, rutas_ingesta)
+    rutas_ingesta = ['ingesta/inicial', 'ingesta/consecutiva']
+    logging.info("Inicio de la ejecución de limpieza diaria")
+    procesar_archivos(s3_bucket, rutas_ingesta)
         
         # Espera de un día (24 horas)
-        logging.info("Limpieza completada. Esperando 24 horas para la próxima ejecución.")
-        time.sleep(24 * 60 * 60)  # Pausa de 86400 segundos
+    logging.info("Limpieza completada. Esperando 24 horas para la próxima ejecución.")
