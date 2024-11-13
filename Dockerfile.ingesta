@@ -10,7 +10,7 @@ COPY scripts/requirements.txt .
 # Instalar las dependencias directamente
 RUN pip install --no-cache-dir -r requirements.txt
 # Crea un script en bucle para ejecutar limpieza.py cada 24 horas
-RUN echo '#!/bin/bash\nwhile true; do\n  python /app/limpieza.py\n  sleep 180\n done' > /app/loop.sh
+RUN echo '#!/bin/bash\nwhile true; do\n  python /app/ingesta.py\n  sleep 86400\n done' > /app/loop.sh
 # Da permisos de ejecución al script
 RUN chmod +x /app/loop.sh
 # Copiar el resto de los scripts al contenedor
