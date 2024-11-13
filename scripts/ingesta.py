@@ -13,6 +13,7 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s"
 )
 
+logging.info("Iniciando ejecución del script 'ingesta.py'.")
 # Variables de entorno y configuración
 s3_bucket = os.getenv("S3_BUCKET_NAME")
 socrata_username = os.getenv("SOCRATA_USERNAME")

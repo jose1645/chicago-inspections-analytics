@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY scripts/ .
 
 # Configurar el CMD para ejecutar el script
-CMD ["python","/app/simple_test.py"]
+CMD ["python","/app/ingesta.py"]
