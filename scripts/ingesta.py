@@ -138,5 +138,5 @@ def ingest_data():
 
     # Ejecutar el script de limpieza tras completar la ingesta
     logging.info("Ejecutando proceso de limpieza...")
-    subprocess.run(["/app/venv/bin/python", "/app/limpieza.py"])
+    subprocess.run(["python", "/app/limpieza.py"])
     logging.info("Proceso de limpieza completado.")
