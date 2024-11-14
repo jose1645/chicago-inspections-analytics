@@ -15,4 +15,4 @@ root.render(
 );
 
 // Si quieres empezar a medir el rendimiento, puedes pasar una función a `reportWebVitals`
-reportWebVitals();
+//reportWebVitals();
