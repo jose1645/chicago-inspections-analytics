@@ -1,0 +1,18 @@
+/* src/styles/MLModels.css */
+.mlmodels {
+    background-color: #eef5e6;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.model-placeholder {
+    width: 45%;
+    height: 200px;
+    background-color: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    margin-top: 20px;
+}

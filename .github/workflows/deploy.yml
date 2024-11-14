@@ -16,6 +16,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      # Construcción de la imagen de Docker para cada servicio
       - name: Build Docker image for Ingesta
         run: |
           docker build -t my-dataproject-ingesta -f Dockerfile.ingesta .
@@ -26,25 +27,23 @@ jobs:
 
       - name: Build Docker image for Webapp
         run: |
-          docker build -t my-dataproject-webapp -f Dockerfile.webapp .
+          docker build -t my-dataproject-webapp -f webapp/Dockerfile .
 
       # Log in to Docker Hub
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login --username synteck428 --password-stdin
 
-      # Etiquetar y subir la imagen de ingesta
+      # Etiquetar y subir las imágenes a Docker Hub
       - name: Tag and push Ingesta Docker image
         run: |
           docker tag my-dataproject-ingesta:latest synteck428/my-dataproject-ingesta:latest
           docker push synteck428/my-dataproject-ingesta:latest
 
-      # Etiquetar y subir la imagen de modelo
       - name: Tag and push Model Docker image
         run: |
           docker tag my-dataproject-model:latest synteck428/my-dataproject-model:latest
           docker push synteck428/my-dataproject-model:latest
 
-      # Etiquetar y subir la imagen de webappa
       - name: Tag and push Webapp Docker image
         run: |
           docker tag my-dataproject-webapp:latest synteck428/my-dataproject-webapp:latest
@@ -68,15 +67,12 @@ jobs:
         run: chmod 600 key.pem
 
       - name: Deploy to EC2
+        env:
+          SOCRATA_USERNAME: ${{ secrets.SOCRATA_USERNAME }}
+          SOCRATA_PASSWORD: ${{ secrets.SOCRATA_PASSWORD }}
+          SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
+          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
         run: |
-          if [ -z "${{ secrets.SOCRATA_USERNAME }}" ]; then
-             echo "SOCRATA_USERNAME is not set or is empty"
-             exit 1  # Esto falla el job si la variable no está definida
-          else
-             echo "SOCRATA_USERNAME is set"
-          fi
-
-          # Ejecutar el bloque SSH con variables de entorno
           ssh -i key.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} << 'EOF'
             # Descargar las últimas imágenes de Docker
             docker pull synteck428/my-dataproject-ingesta:latest
@@ -87,14 +83,12 @@ jobs:
             docker stop ingesta model webapp || true
             docker rm ingesta model webapp || true
 
-            # Ejecutar los contenedores actualizados, pasando las variables de entorno
+            # Ejecutar los contenedores actualizados, pasando las variables de entorno necesarias
             docker run -d --name ingesta \
-              -e SOCRATA_USERNAME="${{secrets.SOCRATA_USERNAME}}" \
-              -e SOCRATA_PASSWORD="${{ secrets.SOCRATA_PASSWORD }}" \
-              -e SOCRATA_APP_TOKEN="${{ secrets.SOCRATA_APP_TOKEN }}" \
-              -e S3_BUCKET_NAME="${{ secrets.S3_BUCKET_NAME }}" \
-              -e AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-              -e AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
+              -e SOCRATA_USERNAME="${SOCRATA_USERNAME}" \
+              -e SOCRATA_PASSWORD="${SOCRATA_PASSWORD}" \
+              -e SOCRATA_APP_TOKEN="${SOCRATA_APP_TOKEN}" \
+              -e S3_BUCKET_NAME="${S3_BUCKET_NAME}" \
               synteck428/my-dataproject-ingesta:latest
 
             docker run -d --name model \
@@ -103,8 +97,7 @@ jobs:
             docker run -d --name webapp -p 80:80 \
               synteck428/my-dataproject-webapp:latest
 
-            docker image prune -af # Elimina imágenes no asociadas a ningún contenedor en ejecución
+            # Limpiar imágenes y volúmenes no utilizados
+            docker image prune -af
             docker system prune --volumes -f
-            docker volume prune -f
-
           EOF
