@@ -28,9 +28,11 @@ jobs:
       - name: Build Docker image for Webapp
         run: |
           docker build -t my-dataproject-webapp -f Dockerfile.webapp .
+
       - name: Build Docker image for API
         run: |
-            docker build -t my-dataproject-backend_webapp -f Dockerfile.backend_webapp .
+          docker build -t my-dataproject-backend_webapp -f Dockerfile.backend_webapp .
+
       # Log in to Docker Hub
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login --username synteck428 --password-stdin
@@ -91,8 +93,6 @@ jobs:
             docker stop ingesta model webapp backend_webapp || true
             docker rm ingesta model webapp backend_webapp || true
 
-
-
             # Ejecutar los contenedores actualizados, pasando las variables de entorno necesarias
             docker run -d --name ingesta \
               -e SOCRATA_USERNAME="${SOCRATA_USERNAME}" \
@@ -108,14 +108,14 @@ jobs:
               -v /etc/letsencrypt:/etc/letsencrypt \
               synteck428/my-dataproject-webapp:latest
 
-            docker run -d -p 8000:8000 --name api backend_webapp && docker exec -it my-django-container python manage.py makemigrations && docker exec -it my-django-container python manage.py migrate && docker exec -it my-django-container python manage.py runserver 0.0.0.0:8000
+            # Ejecutar el contenedor backend_webapp para API (Django)
+            docker run -d -p 8000:8000 --name backend_webapp synteck428/my-dataproject-backend_webapp:latest
+            docker exec -it backend_webapp python manage.py makemigrations
+            docker exec -it backend_webapp python manage.py migrate
+            docker exec -it backend_webapp python manage.py runserver 0.0.0.0:8000
 
-
-
-
-
-              docker image prune -af
-              docker system prune --volumes -f
-
+            # Limpiar imágenes y volúmenes no utilizados
+            docker image prune -af
+            docker system prune --volumes -f
 
           EOF
