@@ -1,0 +1,29 @@
+# Etapa 1: Construcción de la imagen con las dependencias de Python
+FROM python:3.10-slim AS builder
+
+# Configurar el directorio de trabajo
+WORKDIR /app
+
+# Copiar el archivo requirements.txt desde la carpeta backend_webapp
+COPY backend_webapp/requirements.txt /app/
+
+# Instalar las dependencias
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Etapa 2: Copiar los archivos del proyecto
+FROM python:3.10-slim
+
+# Configurar el directorio de trabajo
+WORKDIR /app
+
+# Copiar las dependencias instaladas desde la etapa de construcción
+COPY --from=builder /app /app
+
+# Copiar todo el código del proyecto, incluyendo los archivos de backend_webapp
+COPY . /app/
+
+# Exponer el puerto 8000 para la aplicación Django
+EXPOSE 8000
+
+# Comando para ejecutar el servidor de desarrollo de Django
+CMD ["python", "backend_webapp/manage.py", "runserver", "0.0.0.0:8000"]

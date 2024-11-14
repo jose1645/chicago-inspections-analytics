@@ -28,7 +28,9 @@ jobs:
       - name: Build Docker image for Webapp
         run: |
           docker build -t my-dataproject-webapp -f Dockerfile.webapp .
-
+      - name: Build Docker image for API
+        run: |
+            docker build -t my-dataproject-backend_webapp -f Dockerfile.backend_webapp .
       # Log in to Docker Hub
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login --username synteck428 --password-stdin
@@ -48,6 +50,11 @@ jobs:
         run: |
           docker tag my-dataproject-webapp:latest synteck428/my-dataproject-webapp:latest
           docker push synteck428/my-dataproject-webapp:latest
+
+      - name: Tag and push Backend_Webapp Docker image
+        run: |
+          docker tag my-dataproject-backend_webapp:latest synteck428/my-dataproject-backend_webapp:latest
+          docker push synteck428/my-dataproject-backend_webapp:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -78,10 +85,13 @@ jobs:
             docker pull synteck428/my-dataproject-ingesta:latest
             docker pull synteck428/my-dataproject-model:latest
             docker pull synteck428/my-dataproject-webapp:latest
+            docker pull synteck428/my-dataproject-backend_webapp:latest
 
             # Detener y eliminar contenedores anteriores
-            docker stop ingesta model webapp || true
-            docker rm ingesta model webapp || true
+            docker stop ingesta model webapp backend_webapp || true
+            docker rm ingesta model webapp backend_webapp || true
+
+
 
             # Ejecutar los contenedores actualizados, pasando las variables de entorno necesarias
             docker run -d --name ingesta \
@@ -97,6 +107,12 @@ jobs:
             docker run -d --name webapp -p 80:80 -p 443:443 \
               -v /etc/letsencrypt:/etc/letsencrypt \
               synteck428/my-dataproject-webapp:latest
+
+            docker run -d -p 8000:8000 --name api backend_webapp && docker exec -it my-django-container python manage.py makemigrations && docker exec -it my-django-container python manage.py migrate && docker exec -it my-django-container python manage.py runserver 0.0.0.0:8000
+
+
+
+
 
               docker image prune -af
               docker system prune --volumes -f
