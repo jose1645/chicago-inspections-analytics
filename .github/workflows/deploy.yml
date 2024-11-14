@@ -98,7 +98,8 @@ jobs:
               -v /etc/letsencrypt:/etc/letsencrypt \
               synteck428/my-dataproject-webapp:latest
 
-            # Limpiar imágenes y volúmenes no utilizados
-            docker image prune -af
-            docker system prune --volumes -f
+              docker image prune -af
+              docker system prune --volumes -f
+
+
           EOF

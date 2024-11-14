@@ -1,19 +1,29 @@
-# Etapa 1: Construcción de la aplicación
+
+# Etapa 1: Construcción de la aplicación React
 FROM node:16 AS build
+
 WORKDIR /app
+
+# Copiar archivos de configuración de npm y instalar dependencias
 COPY webapp/package*.json ./
 RUN npm install
+
+# Copiar los archivos fuente y construir la app
 COPY webapp/. .
 RUN npm run build
 
 # Etapa 2: Configuración de NGINX
 FROM nginx:alpine
+
+# Copiar los archivos construidos a la carpeta que usa NGINX
 COPY --from=build /app/build /usr/share/nginx/html
+
+# Copiar la configuración de NGINX desde tu archivo local
 COPY webapp/nginx.conf /etc/nginx/conf.d/default.conf
 
-# Monta los certificados SSL desde el host
-# Asegúrate de que el directorio de Let's Encrypt en el host sea accesible
-# Esto se hace durante el docker run, como verás en el próximo paso
-
+# Exponer los puertos 80 y 443
 EXPOSE 80 443
+
+# Iniciar NGINX
 CMD ["nginx", "-g", "daemon off;"]
+
