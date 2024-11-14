@@ -27,7 +27,7 @@ jobs:
 
       - name: Build Docker image for Webapp
         run: |
-          docker build -t my-dataproject-webapp -f webapp/Dockerfile .
+          docker build -t my-dataproject-webapp -f Dockerfile .
 
       # Log in to Docker Hub
       - name: Log in to Docker Hub
