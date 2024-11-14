@@ -4,10 +4,17 @@ FROM python:3.10-slim AS builder
 # Configurar el directorio de trabajo
 WORKDIR /app
 
+# Crear un entorno virtual en el contenedor
+RUN python -m venv /venv
+
+# Asegurarse de que el entorno virtual esté activado en cada comando
+ENV VIRTUAL_ENV=/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
 # Copiar el archivo requirements.txt desde la carpeta backend_webapp
 COPY backend_webapp/requirements.txt /app/
 
-# Instalar las dependencias
+# Instalar las dependencias dentro del entorno virtual
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Etapa 2: Copiar los archivos del proyecto
@@ -16,11 +23,18 @@ FROM python:3.10-slim
 # Configurar el directorio de trabajo
 WORKDIR /app
 
+# Crear el entorno virtual en el contenedor
+RUN python -m venv /venv
+
+# Asegurarse de que el entorno virtual esté activado
+ENV VIRTUAL_ENV=/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
 # Copiar las dependencias instaladas desde la etapa de construcción
-COPY --from=builder /app /app
+COPY --from=builder /venv /venv
 
 # Copiar todo el código del proyecto, incluyendo los archivos de backend_webapp
-COPY backend_webapp /app/backend_webapp/
+COPY . /app/
 
 # Exponer el puerto 8000 para la aplicación Django
 EXPOSE 8000
