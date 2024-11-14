@@ -31,7 +31,7 @@ jobs:
 
       - name: Build Docker image for API
         run: |
-          docker build --progress=plain -t my-dataproject-backend_webapp -f Dockerfile.backend_webapp .
+          docker build -t my-dataproject-backend_webapp -f Dockerfile.backend_webapp .
 
       # Log in to Docker Hub
       - name: Log in to Docker Hub
