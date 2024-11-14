@@ -94,7 +94,8 @@ jobs:
             docker run -d --name model \
               synteck428/my-dataproject-model:latest
 
-            docker run -d --name webapp -p 80:80 \
+            docker run -d --name webapp -p 80:80 -p 443:443 \
+              -v /etc/letsencrypt:/etc/letsencrypt \
               synteck428/my-dataproject-webapp:latest
 
             # Limpiar imágenes y volúmenes no utilizados
