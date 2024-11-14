@@ -108,11 +108,9 @@ jobs:
               -v /etc/letsencrypt:/etc/letsencrypt \
               synteck428/my-dataproject-webapp:latest
 
-            # Ejecutar el contenedor backend_webapp para API (Django)
-            docker run -d -p 8000:8000 -v --name backend_webapp synteck428/my-dataproject-backend_webapp:latest
-            docker exec -it backend_webapp python manage.py makemigrations
-            docker exec -it backend_webapp python manage.py migrate
-            docker exec -it backend_webapp python manage.py runserver 0.0.0.0:8000
+           
+            docker run -d --name api \
+              synteck428/my-dataproject-backend_webapp:latest
 
             # Limpiar imágenes y volúmenes no utilizados
             docker image prune -af
