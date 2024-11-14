@@ -90,8 +90,8 @@ jobs:
             docker pull synteck428/my-dataproject-backend_webapp:latest
 
             # Detener y eliminar contenedores anteriores
-            docker stop ingesta model webapp backend_webapp || true
-            docker rm ingesta model webapp backend_webapp || true
+            docker stop ingesta model webapp api || true
+            docker rm ingesta model webapp api || true
 
             # Ejecutar los contenedores actualizados, pasando las variables de entorno necesarias
             docker run -d --name ingesta \
