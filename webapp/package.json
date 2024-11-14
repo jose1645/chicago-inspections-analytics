@@ -21,7 +21,7 @@
     "devDependencies": {
       "eslint": "^8.5.0"
     },
-    "proxy": "http://localhost:3000",
+    "proxy": "https://chicago-inspections-analytics.synteck.org/",
     "browserslist": {
       "production": [
         ">0.2%",
