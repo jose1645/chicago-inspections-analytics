@@ -1,3 +1,4 @@
+import os
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Count, Avg
@@ -13,8 +14,9 @@ class KPIs(APIView):
         avg_score = Inspection.objects.aggregate(Avg('score'))['score__avg']
 
         # KPIs adicionales basados en el archivo de S3 (por ejemplo, inspecciones por mes)
-        bucket_name = settings.AWS_STORAGE_BUCKET_NAME
-        file_key = 'data/inspections.csv'  # Asegúrate de usar la clave correcta del archivo en S3
+        bucket_name = os.getenv("S3_BUCKET_NAME")
+
+        file_key = 'datos_limpios/datos_limpios/datos_limpios_2024-11-13_fe3e1ed7a40a26cef96cae50369e0e13.pkl'  
         
         # Cargar y transformar los datos desde S3
         try:
