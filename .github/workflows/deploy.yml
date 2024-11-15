@@ -3,43 +3,29 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - master  # Cambia esto a la rama que deseas usar para el despliegue
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout del código fuente
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Configurar Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      # Construcción de imágenes Docker
-      - name: Build Docker image for Ingesta
+      - name: Build Docker images
         run: |
           docker build -t synteck428/my-dataproject-ingesta:latest -f Dockerfile.ingesta .
-
-      - name: Build Docker image for Model
-        run: |
           docker build -t synteck428/my-dataproject-model:latest -f Dockerfile.model .
-
-      - name: Build Docker image for Webapp
-        run: |
           docker build -t synteck428/my-dataproject-webapp:latest -f Dockerfile.webapp .
-
-      - name: Build Docker image for API
-        run: |
           docker build -t synteck428/my-dataproject-backend_webapp:latest -f Dockerfile.backend_webapp .
 
-      # Login a Docker Hub
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login --username synteck428 --password-stdin
 
-      # Subir imágenes a Docker Hub
       - name: Push Docker images
         run: |
           docker push synteck428/my-dataproject-ingesta:latest
@@ -52,22 +38,19 @@ jobs:
     needs: build
 
     steps:
-      # Configurar credenciales de AWS
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1  # Cambia según tu región
+          aws-region: us-east-1
 
-      # Decodificar y configurar la llave SSH
       - name: Decode SSH Key
         run: echo "${{ secrets.EC2_SSH_KEY }}" | base64 --decode > key.pem
 
       - name: Set permissions for SSH key
         run: chmod 600 key.pem
 
-      # Desplegar en EC2
       - name: Deploy to EC2
         env:
           SOCRATA_USERNAME: ${{ secrets.SOCRATA_USERNAME }}
@@ -105,8 +88,7 @@ jobs:
               -v /etc/letsencrypt:/etc/letsencrypt \
               synteck428/my-dataproject-webapp:latest
 
-            docker run -d --name api \
-              -p 8000:8000 \  # Mapea el puerto 8000 del contenedor al host
+            docker run -d --name api -p 8000:8000 \
               -e S3_BUCKET_NAME="${S3_BUCKET_NAME}" \
               -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
               -e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
