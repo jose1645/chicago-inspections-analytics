@@ -19,55 +19,43 @@ jobs:
       # Construcción de la imagen de Docker para cada servicio
       - name: Build Docker image for Ingesta
         run: |
-          docker build -t my-dataproject-ingesta -f Dockerfile.ingesta .
+          docker build -t synteck428/my-dataproject-ingesta:latest -f Dockerfile.ingesta .
 
       - name: Build Docker image for Model
         run: |
-          docker build -t my-dataproject-model -f Dockerfile.model .
+          docker build -t synteck428/my-dataproject-model:latest -f Dockerfile.model .
 
       - name: Build Docker image for Webapp
         run: |
-          docker build -t my-dataproject-webapp -f Dockerfile.webapp .
+          docker build -t synteck428/my-dataproject-webapp:latest -f Dockerfile.webapp .
 
       - name: Build Docker image for API
         run: |
-          docker build -t my-dataproject-backend_webapp -f Dockerfile.backend_webapp .
+          docker build -t synteck428/my-dataproject-backend_webapp:latest -f Dockerfile.backend_webapp .
 
       # Log in to Docker Hub
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login --username synteck428 --password-stdin
 
-      # Etiquetar y subir las imágenes a Docker Hub
-      - name: Tag and push Ingesta Docker image
+      # Subir las imágenes a Docker Hub
+      - name: Push Docker images
         run: |
-          docker tag my-dataproject-ingesta:latest synteck428/my-dataproject-ingesta:latest
           docker push synteck428/my-dataproject-ingesta:latest
-
-      - name: Tag and push Model Docker image
-        run: |
-          docker tag my-dataproject-model:latest synteck428/my-dataproject-model:latest
           docker push synteck428/my-dataproject-model:latest
-
-      - name: Tag and push Webapp Docker image
-        run: |
-          docker tag my-dataproject-webapp:latest synteck428/my-dataproject-webapp:latest
           docker push synteck428/my-dataproject-webapp:latest
-
-      - name: Tag and push Backend_Webapp Docker image
-        run: |
-          docker tag my-dataproject-backend_webapp:latest synteck428/my-dataproject-backend_webapp:latest
           docker push synteck428/my-dataproject-backend_webapp:latest
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
+
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1  # Cambia esto a la región que estás utilizando
+          aws-region: us-east-1  # Cambia según tu región
 
       - name: Decode SSH Key
         run: echo "${{ secrets.EC2_SSH_KEY }}" | base64 --decode > key.pem
@@ -99,27 +87,9 @@ jobs:
               -e SOCRATA_PASSWORD="${SOCRATA_PASSWORD}" \
               -e SOCRATA_APP_TOKEN="${SOCRATA_APP_TOKEN}" \
               -e S3_BUCKET_NAME="${S3_BUCKET_NAME}" \
-              -e AWS_ACCESS_KEY_ID="${ secrets.AWS_ACCESS_KEY_ID}"\
-              -e AWS_SECRET_ACCESS_KEY="${secrets.AWS_SECRET_ACCESS_KEY}"\
+              -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
+              -e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
               synteck428/my-dataproject-ingesta:latest
 
             docker run -d --name model \
-              synteck428/my-dataproject-model:latest
-
-            docker run -d --name webapp -p 80:80 -p 443:443 \
-              -v /etc/letsencrypt:/etc/letsencrypt \
-              synteck428/my-dataproject-webapp:latest
-
-           
-            docker run -d --name api \
-              -e S3_BUCKET_NAME="${S3_BUCKET_NAME}"
-              -e AWS_ACCESS_KEY_ID="${ secrets.AWS_ACCESS_KEY_ID}"\
-              -e AWS_SECRET_ACCESS_KEY="${secrets.AWS_SECRET_ACCESS_KEY}"\ 
-              synteck428/my-dataproject-backend_webapp:latest
-
-
-            # Limpiar imágenes y volúmenes no utilizados
-            docker image prune -af
-            docker system prune --volumes -f
-
-          EOF
+              synteck428/my
