@@ -53,7 +53,6 @@ jobs:
 
       - name: Deploy to EC2
         env:
-          EC2_INSTANCE_IP: ${{ secrets.EC2_INSTANCE_IP }}
           SOCRATA_USERNAME: ${{ secrets.SOCRATA_USERNAME }}
           SOCRATA_PASSWORD: ${{ secrets.SOCRATA_PASSWORD }}
           SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
@@ -81,17 +80,19 @@ jobs:
             echo "Subiendo Docker Compose..."
             cat << 'COMPOSE' > docker-compose.yml
             version: "3.8"
+
             services:
               ingesta:
                 image: synteck428/my-dataproject-ingesta:latest
-                env_file:
-                  - .env
+                env_file: .env
                 networks:
                   - my-network
+
               model:
                 image: synteck428/my-dataproject-model:latest
                 networks:
                   - my-network
+
               webapp:
                 image: synteck428/my-dataproject-webapp:latest
                 ports:
@@ -101,14 +102,15 @@ jobs:
                   - /etc/letsencrypt:/etc/letsencrypt
                 networks:
                   - my-network
+
               api:
                 image: synteck428/my-dataproject-backend_webapp:latest
                 ports:
                   - "8000:8000"
-                env_file:
-                  - .env
+                env_file: .env
                 networks:
                   - my-network
+
             networks:
               my-network:
                 driver: bridge
@@ -117,6 +119,9 @@ jobs:
             echo "Iniciando servicios con Docker Compose..."
             docker-compose down --remove-orphans
             docker-compose up -d
+
+            echo "Eliminando archivo .env..."
+            rm -f .env
 
             echo "Limpiando recursos no utilizados..."
             docker image prune -af
