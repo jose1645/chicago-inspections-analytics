@@ -10,12 +10,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout del código fuente
       - name: Checkout code
         uses: actions/checkout@v2
 
+      # 2. Configurar Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      # 3. Construir imágenes Docker
       - name: Build Docker images
         run: |
           docker build -t synteck428/my-dataproject-ingesta:latest -f Dockerfile.ingesta .
@@ -23,9 +26,11 @@ jobs:
           docker build -t synteck428/my-dataproject-webapp:latest -f Dockerfile.webapp .
           docker build -t synteck428/my-dataproject-backend_webapp:latest -f Dockerfile.backend_webapp .
 
+      # 4. Login a Docker Hub
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login --username synteck428 --password-stdin
 
+      # 5. Empujar imágenes a Docker Hub
       - name: Push Docker images
         run: |
           docker push synteck428/my-dataproject-ingesta:latest
@@ -38,6 +43,7 @@ jobs:
     needs: build
 
     steps:
+      # 1. Configurar credenciales AWS
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -45,23 +51,38 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      # 2. Configurar Deploy Key para GitHub
+      - name: Configure Deploy Key
+        run: |
+          echo "Configurando Deploy Key para GitHub..."
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo -e "Host github.com\n\tStrictHostKeyChecking no\n\tIdentityFile ~/.ssh/deploy_key" > ~/.ssh/config
+
+      # 3. Probar conexión SSH con GitHub
+      - name: Test SSH connection
+        run: ssh -T git@github.com
+
+      # 4. Clonar repositorio y obtener docker-compose.yml
+      - name: Clone repository and fetch docker-compose.yml
+        run: |
+          git clone --depth 1 --branch master git@github.com:jose1645/chicago-inspections-analytics.git
+          cp chicago-inspections-analytics/docker-compose.yml .
+
+      # 5. Configurar conexión SSH a EC2
       - name: Decode SSH Key
         run: echo "${{ secrets.EC2_SSH_KEY }}" | base64 --decode > key.pem
 
       - name: Set permissions for SSH key
         run: chmod 600 key.pem
 
-      - name: Clone repository and fetch docker-compose.yml
-        run: |
-          git clone --depth 1 --branch master git@github.com:jose1645/chicago-inspections-analytics.git
-          cp chicago-inspections-analytics/docker-compose.yml .
-
-
+      # 6. Desplegar a EC2
       - name: Deploy to EC2
         run: |
           ssh -i key.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} << 'EOF'
 
-            echo "Iniciando servicios con Docker Compose usando variables de entorno..."
+            echo "Configurando variables de entorno..."
             export SOCRATA_USERNAME=${{ secrets.SOCRATA_USERNAME }}
             export SOCRATA_PASSWORD=${{ secrets.SOCRATA_PASSWORD }}
             export SOCRATA_APP_TOKEN=${{ secrets.SOCRATA_APP_TOKEN }}
@@ -69,8 +90,10 @@ jobs:
             export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
             export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-            echo "Descargando docker-compose.yml desde GitHub..."
-            curl -o docker-compose.yml "https://raw.githubusercontent.com/jose1645/chicago-inspections-analytics/refs/heads/master/docker-compose.yml?token=GHSAT0AAAAAACY2DAGJUJZIU25YYEDGP3UEZZXZG7A"
+            echo "Preparando entorno de despliegue..."
+            mkdir -p ~/deploy
+            cd ~/deploy
+            cp ~/docker-compose.yml .
 
             echo "Actualizando imágenes de Docker..."
             docker pull synteck428/my-dataproject-ingesta:latest
@@ -78,11 +101,11 @@ jobs:
             docker pull synteck428/my-dataproject-webapp:latest
             docker pull synteck428/my-dataproject-backend_webapp:latest
 
-            
+            echo "Levantando servicios con Docker Compose..."
             docker-compose down --remove-orphans
             docker-compose up -d
 
-            echo "Limpieza de recursos no utilizados..."
+            echo "Limpieza de imágenes y volúmenes no utilizados..."
             docker image prune -af
             docker system prune --volumes -f
           EOF
