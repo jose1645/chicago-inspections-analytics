@@ -1,38 +1,38 @@
 {
-    "name": "react-webapp",
-    "version": "1.0.0",
-    "description": "Dashboard de KPIs para inspecciones sanitarias",
-    "main": "index.js",
-    "scripts": {
-      "start": "react-scripts start",
-      "build": "react-scripts build",
-      "test": "react-scripts test",
-      "eject": "react-scripts eject"
-    },
-    "keywords": ["react", "dashboard", "kpi", "d3"],
-    "author": "José Antonio Alejo Ramos",
-    "license": "MIT",
-    "dependencies": {
-      "react": "^18.2.0",
-      "react-dom": "^18.2.0",
-      "react-scripts": "5.0.1",
-      "d3": "^7.6.1"
-    },
-    "devDependencies": {
-      "eslint": "^8.5.0"
-    },
-    "proxy": "https://chicago-inspections-analytics.synteck.org/",
-    "browserslist": {
-      "production": [
-        ">0.2%",
-        "not dead",
-        "not op_mini all"
-      ],
-      "development": [
-        "last 1 chrome version",
-        "last 1 firefox version",
-        "last 1 safari version"
-      ]
-    }
+  "name": "react-webapp",
+  "version": "1.0.0",
+  "description": "Dashboard de KPIs para inspecciones sanitarias",
+  "main": "index.js",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "keywords": ["react", "dashboard", "kpi", "d3"],
+  "author": "José Antonio Alejo Ramos",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "d3": "^7.6.1",
+    "axios": "^1.5.0" 
+  },
+  "devDependencies": {
+    "eslint": "^8.5.0"
+  },
+  "proxy": "https://chicago-inspections-analytics.synteck.org/",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
-  
+}
