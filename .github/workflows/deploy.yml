@@ -3,20 +3,22 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - master  # Cambia esto a la rama que desees usar para despliegue
+      - master  # Cambia esto a la rama que deseas usar para el despliegue
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout del código fuente
       - name: Checkout code
         uses: actions/checkout@v2
 
+      # Configurar Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      # Construcción de la imagen de Docker para cada servicio
+      # Construcción de imágenes Docker
       - name: Build Docker image for Ingesta
         run: |
           docker build -t synteck428/my-dataproject-ingesta:latest -f Dockerfile.ingesta .
@@ -33,11 +35,11 @@ jobs:
         run: |
           docker build -t synteck428/my-dataproject-backend_webapp:latest -f Dockerfile.backend_webapp .
 
-      # Log in to Docker Hub
+      # Login a Docker Hub
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login --username synteck428 --password-stdin
 
-      # Subir las imágenes a Docker Hub
+      # Subir imágenes a Docker Hub
       - name: Push Docker images
         run: |
           docker push synteck428/my-dataproject-ingesta:latest
@@ -50,6 +52,7 @@ jobs:
     needs: build
 
     steps:
+      # Configurar credenciales de AWS
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -57,31 +60,35 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1  # Cambia según tu región
 
+      # Decodificar y configurar la llave SSH
       - name: Decode SSH Key
         run: echo "${{ secrets.EC2_SSH_KEY }}" | base64 --decode > key.pem
 
       - name: Set permissions for SSH key
         run: chmod 600 key.pem
 
+      # Desplegar en EC2
       - name: Deploy to EC2
         env:
           SOCRATA_USERNAME: ${{ secrets.SOCRATA_USERNAME }}
           SOCRATA_PASSWORD: ${{ secrets.SOCRATA_PASSWORD }}
           SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
           S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           ssh -i key.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} << 'EOF'
-            # Descargar las últimas imágenes de Docker
+            echo "Deteniendo contenedores anteriores..."
+            docker stop ingesta model api webapp || true
+            docker rm ingesta model api webapp || true
+
+            echo "Descargando imágenes de Docker..."
             docker pull synteck428/my-dataproject-ingesta:latest
             docker pull synteck428/my-dataproject-model:latest
             docker pull synteck428/my-dataproject-webapp:latest
             docker pull synteck428/my-dataproject-backend_webapp:latest
 
-            # Detener y eliminar contenedores anteriores
-            docker stop ingesta model webapp api || true
-            docker rm ingesta model webapp api || true
-
-            # Ejecutar los contenedores actualizados, pasando las variables de entorno necesarias
+            echo "Ejecutando contenedores..."
             docker run -d --name ingesta \
               -e SOCRATA_USERNAME="${SOCRATA_USERNAME}" \
               -e SOCRATA_PASSWORD="${SOCRATA_PASSWORD}" \
@@ -92,4 +99,19 @@ jobs:
               synteck428/my-dataproject-ingesta:latest
 
             docker run -d --name model \
-              synteck428/my
+              synteck428/my-dataproject-model:latest
+
+            docker run -d --name webapp -p 80:80 -p 443:443 \
+              -v /etc/letsencrypt:/etc/letsencrypt \
+              synteck428/my-dataproject-webapp:latest
+
+            docker run -d --name api \
+              -e S3_BUCKET_NAME="${S3_BUCKET_NAME}" \
+              -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
+              -e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
+              synteck428/my-dataproject-backend_webapp:latest
+
+            echo "Limpiando recursos no utilizados..."
+            docker image prune -af
+            docker system prune --volumes -f
+          EOF
