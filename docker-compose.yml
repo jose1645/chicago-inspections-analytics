@@ -1,27 +1,44 @@
-version: '3.8'
-services:
-  webapp:
-    image: synteck428/my-dataproject-webapp:latest
-    environment:
-      - SOCRATA_USERNAME=${SOCRATA_USERNAME}
-      - SOCRATA_PASSWORD=${SOCRATA_PASSWORD}
-      - SOCRATA_APP_TOKEN=${SOCRATA_APP_TOKEN}
-      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
-    ports:
-      - "8080:80"
+version: "3.8"
 
+services:
   ingesta:
     image: synteck428/my-dataproject-ingesta:latest
     environment:
-      - SOCRATA_USERNAME=${SOCRATA_USERNAME}
-      - SOCRATA_PASSWORD=${SOCRATA_PASSWORD}
-      - SOCRATA_APP_TOKEN=${SOCRATA_APP_TOKEN}
-      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - SOCRATA_USERNAME
+      - SOCRATA_PASSWORD
+      - SOCRATA_APP_TOKEN
+      - S3_BUCKET_NAME
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+    networks:
+      - my-network
 
   model:
     image: synteck428/my-dataproject-model:latest
+    networks:
+      - my-network
+
+  webapp:
+    image: synteck428/my-dataproject-webapp:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+    networks:
+      - my-network
+
+  api:
+    image: synteck428/my-dataproject-backend_webapp:latest
+    ports:
+      - "8000:8000"
     environment:
-      - SOCRATA_USERNAME=${SOCRATA_USERNAME}
-      - SOCRATA_PASSWORD=${SOCRATA_PASSWORD}
-      - SOCRATA_APP_TOKEN=${SOCRATA_APP_TOKEN}
-      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - S3_BUCKET_NAME
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge
