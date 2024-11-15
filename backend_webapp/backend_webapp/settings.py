@@ -39,7 +39,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 INSTALLED_APPS = [
     'storages',
-    #'apps.inspections',
+    'apps.inspections',
     'corsheaders',
     'rest_framework',
     'django.contrib.admin',
