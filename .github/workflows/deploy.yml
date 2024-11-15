@@ -52,13 +52,6 @@ jobs:
         run: chmod 600 key.pem
 
       - name: Deploy to EC2
-        env:
-          SOCRATA_USERNAME: ${{ secrets.SOCRATA_USERNAME }}
-          SOCRATA_PASSWORD: ${{ secrets.SOCRATA_PASSWORD }}
-          SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
-          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           ssh -i key.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} << 'EOF'
             echo "Descargando imágenes de Docker..."
@@ -68,53 +61,14 @@ jobs:
             docker pull synteck428/my-dataproject-backend_webapp:latest
 
             echo "Creando archivo .env..."
-            cat <<EOF > .env
-            SOCRATA_USERNAME=${SOCRATA_USERNAME}
-            SOCRATA_PASSWORD=${SOCRATA_PASSWORD}
-            SOCRATA_APP_TOKEN=${SOCRATA_APP_TOKEN}
-            S3_BUCKET_NAME=${S3_BUCKET_NAME}
-            AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-            AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-            EOF
-
-            echo "Subiendo Docker Compose..."
-            cat <<EOF > docker-compose.yml
-            version: "3.8"
-
-            services:
-              ingesta:
-                image: synteck428/my-dataproject-ingesta:latest
-                env_file: .env
-                networks:
-                  - my-network
-
-              model:
-                image: synteck428/my-dataproject-model:latest
-                networks:
-                  - my-network
-
-              webapp:
-                image: synteck428/my-dataproject-webapp:latest
-                ports:
-                  - "80:80"
-                  - "443:443"
-                volumes:
-                  - /etc/letsencrypt:/etc/letsencrypt
-                networks:
-                  - my-network
-
-              api:
-                image: synteck428/my-dataproject-backend_webapp:latest
-                ports:
-                  - "8000:8000"
-                env_file: .env
-                networks:
-                  - my-network
-
-            networks:
-              my-network:
-                driver: bridge
-            EOF
+            cat <<EOT > .env
+            SOCRATA_USERNAME=${{ secrets.SOCRATA_USERNAME }}
+            SOCRATA_PASSWORD=${{ secrets.SOCRATA_PASSWORD }}
+            SOCRATA_APP_TOKEN=${{ secrets.SOCRATA_APP_TOKEN }}
+            S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}
+            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            EOT
 
             echo "Iniciando servicios con Docker Compose..."
             docker-compose down --remove-orphans
