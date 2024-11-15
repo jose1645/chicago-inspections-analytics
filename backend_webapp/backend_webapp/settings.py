@@ -38,6 +38,7 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 # Application definition
+DEBUG = False
 
 INSTALLED_APPS = [
     'storages',
