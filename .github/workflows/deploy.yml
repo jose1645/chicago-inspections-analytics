@@ -71,13 +71,12 @@ jobs:
             docker pull synteck428/my-dataproject-webapp:latest
             docker pull synteck428/my-dataproject-backend_webapp:latest
 
-
             echo "Creando red..."
-            docker network create my-network
-
+            docker network create my-network || true
 
             echo "Ejecutando contenedores..."
             docker run -d --name ingesta \
+              --network my-network \
               -e SOCRATA_USERNAME="${SOCRATA_USERNAME}" \
               -e SOCRATA_PASSWORD="${SOCRATA_PASSWORD}" \
               -e SOCRATA_APP_TOKEN="${SOCRATA_APP_TOKEN}" \
@@ -87,15 +86,16 @@ jobs:
               synteck428/my-dataproject-ingesta:latest
 
             docker run -d --name model \
+              --network my-network \
               synteck428/my-dataproject-model:latest
 
-            docker run -d --name webapp 
+            docker run -d --name webapp \
               --network my-network \
               -p 80:80 -p 443:443 \
               -v /etc/letsencrypt:/etc/letsencrypt \
               synteck428/my-dataproject-webapp:latest
 
-            docker run -d --name api 
+            docker run -d --name api \
               --network my-network \
               -p 8000:8000 \
               -e S3_BUCKET_NAME="${S3_BUCKET_NAME}" \
