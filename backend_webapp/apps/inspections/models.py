@@ -4,7 +4,7 @@ class Inspection(models.Model):
     inspection_id = models.IntegerField()
     dba_name = models.CharField(max_length=255)
     aka_name = models.CharField(max_length=255)
-    license_ = models.CharField(max_length=50)
+    license = models.CharField(max_length=50)
     facility_type = models.CharField(max_length=100)
     risk = models.CharField(max_length=50)
     address = models.CharField(max_length=255)

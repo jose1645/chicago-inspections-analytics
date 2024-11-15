@@ -31,7 +31,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 CORS_ALLOWED_ORIGINS = [
-    "https://chicago-inspections-analytics.synteck.org/",  # URL del frontend en producción
+    "https://chicago-inspections-analytics.synteck.org",  # URL del frontend en producción
 ]
 CORS_ALLOW_CREDENTIALS = True
 
