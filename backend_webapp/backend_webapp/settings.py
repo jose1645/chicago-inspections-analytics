@@ -28,7 +28,9 @@ SECRET_KEY = 'django-insecure-cg6j8s^wg1mxnfd^&io0b)8h93!)@@282)qz1k0vm&7((tm)$@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost',
+    '127.0.0.1',
+    'chicago-inspections-analytics.synteck.org']
 
 CORS_ALLOWED_ORIGINS = [
     "https://chicago-inspections-analytics.synteck.org",  # URL del frontend en producción
