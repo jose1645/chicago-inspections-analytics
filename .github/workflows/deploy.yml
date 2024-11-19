@@ -56,7 +56,7 @@ jobs:
         run: |
           echo "Configurando Deploy Key para GitHub..."
           mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/deploy_key
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           echo -e "Host github.com\n\tStrictHostKeyChecking no\n\tIdentityFile ~/.ssh/deploy_key" > ~/.ssh/config
 
