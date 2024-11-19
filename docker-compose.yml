@@ -12,11 +12,15 @@ services:
       - AWS_SECRET_ACCESS_KEY
     networks:
       - my-network
+    container_name: ingesta
+
 
   model:
     image: synteck428/my-dataproject-model:latest
     networks:
       - my-network
+    container_name: modelo
+
 
   webapp:
     image: synteck428/my-dataproject-webapp:latest
@@ -27,6 +31,8 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt
     networks:
       - my-network
+    container_name: webapp
+
 
   api:
     image: synteck428/my-dataproject-backend_webapp:latest
@@ -38,6 +44,8 @@ services:
       - AWS_SECRET_ACCESS_KEY
     networks:
       - my-network
+    container_name: api
+
 
 networks:
   my-network:
