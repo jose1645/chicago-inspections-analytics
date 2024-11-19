@@ -34,7 +34,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 COPY --from=builder /venv /venv
 
 # Copiar todo el código del proyecto, incluyendo los archivos de backend_webapp
-COPY backend_webapp /app/backend_webapp/
+COPY backend_webapp /app
 
 # Exponer el puerto 8000 para la aplicación Djangol
 EXPOSE 8000
