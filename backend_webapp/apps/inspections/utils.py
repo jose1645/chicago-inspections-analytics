@@ -1,7 +1,7 @@
 import boto3
 import pandas as pd
 import os
-
+import pickle
 def load_file_from_s3(bucket_name, file_key):
     """
     Carga un archivo CSV desde S3 y lo convierte en un DataFrame de pandas.
@@ -23,8 +23,12 @@ def load_file_from_s3(bucket_name, file_key):
     # Descargar el archivo desde S3
     try:
         response = s3.get_object(Bucket=bucket_name, Key=file_key)
+        dat = response['Body'].read()
+        data = pickle.loads(dat)
+
         # Leer el contenido del archivo directamente como un DataFrame
-        data = pd.read_pickle(response['Body'])
         return data
     except Exception as e:
         raise Exception(f"Error al cargar el archivo desde S3: {str(e)}")
+
+
