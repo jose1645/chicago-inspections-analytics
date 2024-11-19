@@ -103,6 +103,19 @@ root/
 
 ---
 
+## Notebooks
+
+Los notebooks en este proyecto son utilizados para realizar análisis exploratorios de datos (EDA) y desarrollar modelos de machine learning. Todos los notebooks se encuentran en el directorio `notebooks/`.
+
+### Lista de Notebooks
+
+1. **`eda.ipynb`**: Exploración inicial de los datos y generación de visualizaciones descriptivas.
+2. **`data_cleaning.ipynb`**: Desarrollo y pruebas de rutinas de limpieza de datos.
+3. **`ml_model.ipynb`**: Entrenamiento y validación de modelos de machine learning.
+
+
+---
+
 ## Contribuciones
 
 ¡Las contribuciones son bienvenidas! Por favor, abre un *issue* o envía un *pull request* con tus propuestas.

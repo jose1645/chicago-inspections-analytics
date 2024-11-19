@@ -82,6 +82,20 @@ jobs:
             docker pull synteck428/my-dataproject-webapp:latest;
             docker pull synteck428/my-dataproject-backend_webapp:latest;
 
+            echo 'Exportando variables de entorno...';
+            export SOCRATA_USERNAME=${{ secrets.SOCRATA_USERNAME }};
+            export SOCRATA_PASSWORD=${{ secrets.SOCRATA_PASSWORD }};
+            export SOCRATA_APP_TOKEN=${{ secrets.SOCRATA_APP_TOKEN }};
+            export S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }};
+            export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }};
+            export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }};
+
+
+
+
+
+
+
             echo 'Levantando servicios con Docker Compose...';
             /usr/bin/docker-compose -f ~/deploy/docker-compose.yml down --remove-orphans;
             /usr/bin/docker-compose -f ~/deploy/docker-compose.yml up -d;
