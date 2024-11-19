@@ -43,46 +43,38 @@ jobs:
     needs: build
 
     steps:
-      # 1. Configurar credenciales AWS
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      # 2. Configurar Deploy Key para GitHubl
-
-
+      # 1. Configurar dependencias criptográficas (solución de libcrypto)
       - name: Fix libcrypto
         run: sudo apt-get install --reinstall libssl-dev
 
+      # 2. Configurar Deploy Key
       - name: Configure Deploy Key
         run: |
-          mkdir -p /home/runner/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > /home/runner/.ssh/deploy_key
-          chmod 600 /home/runner/.ssh/deploy_key
-          echo -e "Host github.com\n\tStrictHostKeyChecking no\n\tIdentityFile /home/runner/.ssh/deploy_key" > /home/runner/.ssh/config
-      
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo -e "Host github.com\n\tStrictHostKeyChecking no\n\tIdentityFile ~/.ssh/deploy_key" > ~/.ssh/config
 
-      # 3. Probar conexión SSH con GitHub
-      - name: Test SSH connection
-        run: ssh -T git@github.com
+      # 3. Verificar Deploy Key
+      - name: Verify Deploy Key
+        run: |
+          ls -l ~/.ssh/
+          ssh -i ~/.ssh/deploy_key -T git@github.com
 
       # 4. Clonar repositorio y obtener docker-compose.yml
-      - name: Clone repository and fetch docker-compose.yml
+      - name: Clone repository
         run: |
-          git clone --depth 1 --branch master git@github.com:jose1645/chicago-inspections-analytics.git
+          git clone git@github.com:jose1645/chicago-inspections-analytics.git
           cp chicago-inspections-analytics/docker-compose.yml ~/deploy/
 
       # 5. Configurar conexión SSH a EC2
       - name: Decode SSH Key
-        run: echo "${{ secrets.EC2_SSH_KEY }}" | base64 --decode > key.pem
+        run: echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
 
       - name: Set permissions for SSH key
         run: chmod 600 key.pem
 
-      # 6. Deploy to EC2
+      # 6. Desplegar a EC2
       - name: Deploy to EC2
         run: |
           ssh -i key.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} << 'EOF'
