@@ -51,7 +51,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # 2. Configurar Deploy Key para GitHub
+      # 2. Configurar Deploy Key para GitHubl
       - name: Configure Deploy Key
         run: |
           echo "Configurando Deploy Key para GitHub..."
