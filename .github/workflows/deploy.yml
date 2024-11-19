@@ -76,7 +76,7 @@ jobs:
       # 4. Desplegar servicios con Docker Compose
       - name: Deploy to EC2
         run: |
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} << 'EOF'
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} 
             echo "Actualizando imágenes de Docker..."
             docker pull synteck428/my-dataproject-ingesta:latest
             docker pull synteck428/my-dataproject-model:latest
@@ -89,4 +89,4 @@ jobs:
 
             echo "Limpieza de imágenes y volúmenes no utilizados..."
             docker system prune -f
-          EOF
+          
