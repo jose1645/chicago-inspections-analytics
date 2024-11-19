@@ -55,11 +55,6 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           echo -e "Host github.com\n\tStrictHostKeyChecking no\n\tIdentityFile ~/.ssh/deploy_key" > ~/.ssh/config
 
-      # 3. Verificar Deploy Key
-      - name: Verify Deploy Key
-        run: |
-          ls -l ~/.ssh/
-          ssh -i ~/.ssh/deploy_key -T git@github.com
 
       # 4. Clonar repositorio y obtener docker-compose.yml
       - name: Clone repository
