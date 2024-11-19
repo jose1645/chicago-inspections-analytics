@@ -55,19 +55,23 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           echo -e "Host github.com\n\tStrictHostKeyChecking no\n\tIdentityFile ~/.ssh/deploy_key" > ~/.ssh/config
 
-
-      # 4. Clonar repositorio y obtener docker-compose.yml
-      - name: Clone repository
-        run: |
-          git clone git@github.com:jose1645/chicago-inspections-analytics.git
-          cp chicago-inspections-analytics/docker-compose.yml /home/ubuntu/
-
       # 5. Configurar conexión SSH a EC2
       - name: Decode SSH Key
         run: echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
 
       - name: Set permissions for SSH key
         run: chmod 600 key.pem
+
+
+      - name: Clone repository
+        run: git clone git@github.com:jose1645/chicago-inspections-analytics.git
+      
+      - name: Transfer docker-compose.yml to EC2
+        run: |
+          scp -i ~/.ssh/deploy_key chicago-inspections-analytics/docker-compose.yml ubuntu@${{ secrets.EC2_INSTANCE_IP }}:/home/ubuntu/
+      
+
+
 
       # 6. Desplegar a EC2
       - name: Deploy to EC2
