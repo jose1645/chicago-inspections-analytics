@@ -53,37 +53,30 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          echo -e "Host github.com\n\tStrictHostKeyChecking no\n\tIdentityFile ~/.ssh/deploy_key" > ~/.ssh/config
+          echo -e "Host github.com\n\tStrictHostKeyChecking no\n\tIdentityFile ~/.ssh/deploy_key\n" > ~/.ssh/config
 
-      # 5. Configurar conexión SSH a EC2
-      - name: Decode SSH Key
-        run: echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
-
-      - name: Set permissions for SSH key
-        run: chmod 600 key.pem
-
-      - name: Clone repository
-        run: git clone git@github.com:jose1645/chicago-inspections-analytics.git
-      
-      - name: Transfer docker-compose.yml to EC2
-        run: scp -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key chicago-inspections-analytics/docker-compose.yml ubuntu@${{ secrets.EC2_INSTANCE_IP }}:/home/ubuntu/
-      
-      # 6. Desplegar a EC2
-      - name: Deploy to EC2
+      # 3. Descargar solo docker-compose.yml en EC2
+      - name: Fetch docker-compose.yml
         run: |
-          ssh -i key.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} << 'EOF'
-            echo "Configurando variables de entorno..."
-            export SOCRATA_USERNAME=${{ secrets.SOCRATA_USERNAME }}
-            export SOCRATA_PASSWORD=${{ secrets.SOCRATA_PASSWORD }}
-            export SOCRATA_APP_TOKEN=${{ secrets.SOCRATA_APP_TOKEN }}
-            export S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}
-            export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-            export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-            echo "Preparando entorno de despliegue..."
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} << 'EOF'
+            echo "Preparando directorio de despliegue..."
             mkdir -p ~/deploy
             cd ~/deploy
 
+            echo "Configurando sparse-checkout para obtener solo docker-compose.yml..."
+            git init
+            git remote add origin git@github.com:jose1645/chicago-inspections-analytics.git
+            git config core.sparseCheckout true
+            echo "docker-compose.yml" > .git/info/sparse-checkout
+            git pull origin master
+
+            echo "Archivo docker-compose.yml descargado."
+          EOF
+
+      # 4. Desplegar servicios con Docker Compose
+      - name: Deploy to EC2
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} << 'EOF'
             echo "Actualizando imágenes de Docker..."
             docker pull synteck428/my-dataproject-ingesta:latest
             docker pull synteck428/my-dataproject-model:latest
@@ -91,8 +84,8 @@ jobs:
             docker pull synteck428/my-dataproject-backend_webapp:latest
 
             echo "Levantando servicios con Docker Compose..."
-            docker-compose down --remove-orphans
-            docker-compose up -d
+            docker-compose -f ~/deploy/docker-compose.yml down --remove-orphans
+            docker-compose -f ~/deploy/docker-compose.yml up -d
 
             echo "Limpieza de imágenes y volúmenes no utilizados..."
             docker system prune -f
