@@ -24,7 +24,7 @@ def load_file_from_s3(bucket_name, file_key):
     try:
         response = s3.get_object(Bucket=bucket_name, Key=file_key)
         # Leer el contenido del archivo directamente como un DataFrame
-        data = pd.read_csv(response['Body'])
+        data = pd.read_pickle(response['Body'])
         return data
     except Exception as e:
         raise Exception(f"Error al cargar el archivo desde S3: {str(e)}")
