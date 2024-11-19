@@ -26,9 +26,9 @@ jobs:
           docker build -t synteck428/my-dataproject-webapp:latest -f Dockerfile.webapp .
           docker build -t synteck428/my-dataproject-backend_webapp:latest -f Dockerfile.backend_webapp .
 
-      # 4. Login a Docker Huba
+      # 4. Log in to Docker Hub
       - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_TOKEN }}" 
+        run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login --username synteck428 --password-stdin
 
       # 5. Empujar imágenes a Docker Hub
       - name: Push Docker images
@@ -68,7 +68,7 @@ jobs:
       - name: Clone repository and fetch docker-compose.yml
         run: |
           git clone --depth 1 --branch master git@github.com:jose1645/chicago-inspections-analytics.git
-          cp chicago-inspections-analytics/docker-compose.yml .
+          cp chicago-inspections-analytics/docker-compose.yml ~/deploy/
 
       # 5. Configurar conexión SSH a EC2
       - name: Decode SSH Key
@@ -77,11 +77,10 @@ jobs:
       - name: Set permissions for SSH key
         run: chmod 600 key.pem
 
-      # 6. Desplegar a EC2j
+      # 6. Deploy to EC2
       - name: Deploy to EC2
         run: |
           ssh -i key.pem -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} << 'EOF'
-
             echo "Configurando variables de entorno..."
             export SOCRATA_USERNAME=${{ secrets.SOCRATA_USERNAME }}
             export SOCRATA_PASSWORD=${{ secrets.SOCRATA_PASSWORD }}
@@ -93,7 +92,6 @@ jobs:
             echo "Preparando entorno de despliegue..."
             mkdir -p ~/deploy
             cd ~/deploy
-            cp ~/docker-compose.yml .
 
             echo "Actualizando imágenes de Docker..."
             docker pull synteck428/my-dataproject-ingesta:latest
@@ -106,6 +104,5 @@ jobs:
             docker-compose up -d
 
             echo "Limpieza de imágenes y volúmenes no utilizados..."
-            docker image prune -af
-            docker system prune --volumes -f
+            docker system prune -f
           EOF
