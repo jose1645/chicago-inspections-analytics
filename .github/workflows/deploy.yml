@@ -60,7 +60,7 @@ jobs:
       - name: Clone repository
         run: |
           git clone git@github.com:jose1645/chicago-inspections-analytics.git
-          cp chicago-inspections-analytics/docker-compose.yml ~/deploy/
+          cp chicago-inspections-analytics/docker-compose.yml ~/home/ubuntu/
 
       # 5. Configurar conexión SSH a EC2
       - name: Decode SSH Key
