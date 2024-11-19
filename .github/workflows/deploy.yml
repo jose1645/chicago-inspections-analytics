@@ -26,7 +26,7 @@ jobs:
           docker build -t synteck428/my-dataproject-webapp:latest -f Dockerfile.webapp .
           docker build -t synteck428/my-dataproject-backend_webapp:latest -f Dockerfile.backend_webapp .
 
-      # 4. Login a Docker Hub
+      # 4. Login a Docker Huba
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_TOKEN }}" 
 
