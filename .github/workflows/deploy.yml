@@ -28,7 +28,7 @@ jobs:
 
       # 4. Login a Docker Hub
       - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login --username synteck428 --password-stdin
+        run: echo "${{ secrets.DOCKER_TOKEN }}" 
 
       # 5. Empujar imágenes a Docker Hub
       - name: Push Docker images
