@@ -59,11 +59,11 @@ jobs:
 
       - name: Configure Deploy Key
         run: |
-          echo "Configurando Deploy Key para GitHub..."
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          echo -e "Host github.com\n\tStrictHostKeyChecking no\n\tIdentityFile ~/.ssh/deploy_key" > ~/.ssh/config
+          mkdir -p /home/runner/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > /home/runner/.ssh/deploy_key
+          chmod 600 /home/runner/.ssh/deploy_key
+          echo -e "Host github.com\n\tStrictHostKeyChecking no\n\tIdentityFile /home/runner/.ssh/deploy_key" > /home/runner/.ssh/config
+      
 
       # 3. Probar conexión SSH con GitHub
       - name: Test SSH connection
