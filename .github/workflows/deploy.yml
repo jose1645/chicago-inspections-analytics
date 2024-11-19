@@ -52,6 +52,11 @@ jobs:
           aws-region: us-east-1
 
       # 2. Configurar Deploy Key para GitHubl
+
+
+      - name: Fix libcrypto
+        run: sudo apt-get install --reinstall libssl-dev
+
       - name: Configure Deploy Key
         run: |
           echo "Configurando Deploy Key para GitHub..."
