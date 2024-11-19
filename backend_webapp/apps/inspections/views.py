@@ -19,7 +19,6 @@ class KPIs(APIView):
             total_inspections = len(data_from_s3)
             passed_inspections = len(data_from_s3[data_from_s3['results'] == 'Pass'])
             failed_inspections = len(data_from_s3[data_from_s3['results'] == 'Fail'])
-            avg_score = data_from_s3['score'].mean()
             inspections_by_month = data_from_s3.groupby(data_from_s3['inspection_date'].dt.month).size()
             risk_distribution = data_from_s3['risk'].value_counts()
 
@@ -28,7 +27,6 @@ class KPIs(APIView):
                 'total_inspections': total_inspections,
                 'passed_inspections': passed_inspections,
                 'failed_inspections': failed_inspections,
-                'avg_score': avg_score,
                 'inspections_by_month': inspections_by_month.to_dict(),
                 'risk_distribution': risk_distribution.to_dict(),
             }
