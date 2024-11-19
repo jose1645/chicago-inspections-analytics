@@ -41,6 +41,7 @@ CORS_ALLOW_CREDENTIALS = True
 DEBUG = True
 
 INSTALLED_APPS = [
+    'django_extensions',
     'storages',
     'apps.inspections',
     'corsheaders',
