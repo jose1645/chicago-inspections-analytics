@@ -34,7 +34,7 @@ const ChicagoMap = () => {
 
         const projection = d3.geoMercator()
             .scale(100000)
-            .center([-87.6298, 41.8781])
+            .center([-87.6298, 41.8781]) // Centrar en Chicago
             .translate([width / 2, height / 2]);
 
         const path = d3.geoPath(projection);
@@ -43,18 +43,24 @@ const ChicagoMap = () => {
             .attr("viewBox", [0, 0, width, height])
             .call(
                 d3.zoom()
-                    .scaleExtent([1, 8])
+                    .scaleExtent([1, 8]) // Permitir zoom entre 1x y 8x
                     .on("zoom", (event) => {
-                        g.attr("transform", event.transform);
+                        g.attr("transform", event.transform); // Aplicar transformaciones de zoom
                     })
             );
 
+        // Limpia el contenido previo del <g>
+        svg.selectAll("g").remove();
+
         const g = svg.append("g");
 
-        g.append("path")
-            .datum(geoJson)
+        // Dibujar polígonos del GeoJSON
+        g.selectAll("path")
+            .data(geoJson.features) // Asegúrate de pasar geoJson.features
+            .join("path")
             .attr("fill", "#ddd")
             .attr("stroke", "#333")
+            .attr("stroke-width", 0.5)
             .attr("d", path);
 
     }, [topoData]);
