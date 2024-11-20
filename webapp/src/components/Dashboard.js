@@ -20,8 +20,8 @@ const Dashboard = () => {
                 setKpis(response.data);
 
                 // Cargar el archivo TopoJSON desde utils/chicago.json
-                const topoResponse = await d3.json('/utils/chicago.json');
-                setTopoData(topoResponse);
+               // const topoResponse = await d3.json('/utils/chicago.json');
+                //setTopoData(topoResponse);
 
                 // Extraer ubicaciones de inspección
                 setInspectionLocations(response.data.inspection_locations);
@@ -64,6 +64,7 @@ const Dashboard = () => {
                         ))}
                     </ul>
                 </div>
+                
                 <div className="chart">
                     <h3>Distribución de Riesgo</h3>
                     <ul>
@@ -76,7 +77,6 @@ const Dashboard = () => {
                 </div>
                 <div className="chart">
                     <h3>Mapa de Inspecciones en Chicago</h3>
-                    <ChicagoMap topoData={topoData} inspectionLocations={inspectionLocations} />
                 </div>
             </div>
         </div>
