@@ -1,7 +1,7 @@
 
 # Chicago Food Data Analytics
 
-![Project Logo](https://example.com/logo.png)
+![Project Logo](assets/logotipo.svg)
 
 ## Descripción
 
