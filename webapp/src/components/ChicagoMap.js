@@ -9,9 +9,12 @@ const ChicagoMap = () => {
     useEffect(() => {
         const fetchTopoData = async () => {
             try {
-                const response = await fetch('https://chicago-inspections-analytics.synteck.org/utils/chicago.json');
+                const response = await fetch('/utils/chicago.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
                 const data = await response.json();
-                console.log('TopoData:', data); // Log para verificar la estructura del JSON
+                console.log('TopoData cargado:', data);
                 setTopoData(data);
             } catch (err) {
                 console.error('Error cargando TopoJSON:', err);
@@ -21,8 +24,11 @@ const ChicagoMap = () => {
     }, []);
 
     useEffect(() => {
-        if (!topoData || !topoData.objects || !topoData.objects.zipcodes) {
-            console.error('Datos de TopoJSON no válidos:', topoData);
+        if (!topoData) return;
+
+        // Verifica si los objetos esperados existen
+        if (!topoData.objects || !topoData.objects.zipcodes) {
+            console.error('TopoJSON no tiene "objects.zipcodes".', topoData);
             return;
         }
 
@@ -40,22 +46,22 @@ const ChicagoMap = () => {
         const path = d3.geoPath(projection);
 
         const svg = d3.select(svgRef.current)
-            .attr("viewBox", [0, 0, width, height])
+            .attr('viewBox', [0, 0, width, height])
             .call(
                 d3.zoom()
                     .scaleExtent([1, 8])
-                    .on("zoom", (event) => {
-                        svg.select('g').attr("transform", event.transform);
+                    .on('zoom', (event) => {
+                        g.attr('transform', event.transform);
                     })
             );
 
-        const g = svg.append("g");
+        const g = svg.append('g');
 
-        g.append("path")
+        g.append('path')
             .datum(geoJson)
-            .attr("fill", "#ddd")
-            .attr("stroke", "#333")
-            .attr("d", path);
+            .attr('fill', '#ddd')
+            .attr('stroke', '#333')
+            .attr('d', path);
     }, [topoData]);
 
     return <svg ref={svgRef}></svg>;
