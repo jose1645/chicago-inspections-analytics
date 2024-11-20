@@ -9,9 +9,9 @@ const ChicagoMap = () => {
     useEffect(() => {
         const fetchTopoData = async () => {
             try {
-                const response = await fetch('/utils/chicago.json');
+                const response = await fetch('https://chicago-inspections-analytics.synteck.org/utils/chicago.json');
                 const data = await response.json();
-                console.log('TopoData:', data);
+                console.log('TopoData:', data); // Log para verificar la estructura del JSON
                 setTopoData(data);
             } catch (err) {
                 console.error('Error cargando TopoJSON:', err);
@@ -27,14 +27,14 @@ const ChicagoMap = () => {
         }
 
         const geoJson = topojson.feature(topoData, topoData.objects.zipcodes);
-        console.log('GeoJSON:', geoJson);
+        console.log('GeoJSON generado:', geoJson);
 
         const width = 960;
         const height = 600;
 
         const projection = d3.geoMercator()
             .scale(100000)
-            .center([-87.6298, 41.8781]) // Centrar en Chicago
+            .center([-87.6298, 41.8781])
             .translate([width / 2, height / 2]);
 
         const path = d3.geoPath(projection);
@@ -43,26 +43,19 @@ const ChicagoMap = () => {
             .attr("viewBox", [0, 0, width, height])
             .call(
                 d3.zoom()
-                    .scaleExtent([1, 8]) // Permitir zoom entre 1x y 8x
+                    .scaleExtent([1, 8])
                     .on("zoom", (event) => {
-                        g.attr("transform", event.transform); // Aplicar transformaciones de zoom
+                        svg.select('g').attr("transform", event.transform);
                     })
             );
 
-        // Limpia el contenido previo del <g>
-        svg.selectAll("g").remove();
-
         const g = svg.append("g");
 
-        // Dibujar polígonos del GeoJSON
-        g.selectAll("path")
-            .data(geoJson.features) // Asegúrate de pasar geoJson.features
-            .join("path")
+        g.append("path")
+            .datum(geoJson)
             .attr("fill", "#ddd")
             .attr("stroke", "#333")
-            .attr("stroke-width", 0.5)
             .attr("d", path);
-
     }, [topoData]);
 
     return <svg ref={svgRef}></svg>;
