@@ -29,7 +29,7 @@ services:
       - "443:443"
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
-      - backend-static:/usr/share/nginx/html/backend-static/
+      - backend-static:/usr/share/nginx/html/backend-static
     networks:
       - my-network
     container_name: webapp
@@ -46,7 +46,7 @@ services:
     networks:
       - my-network
     volumes:
-      - backend-static:/usr/share/nginx/html/backend-static/
+      - backend-static:/usr/share/nginx/html/backend-static
     container_name: api
 
 
