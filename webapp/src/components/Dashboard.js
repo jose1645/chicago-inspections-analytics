@@ -43,10 +43,6 @@ const Dashboard = () => {
                     <p>{kpis.failed_inspections}</p>
                 </div>
                 <div className="chart">
-                    <h3>Puntuación Promedio</h3>
-                    <p>{kpis.avg_score.toFixed(2)}</p>
-                </div>
-                <div className="chart">
                     <h3>Inspecciones por Mes</h3>
                     <ul>
                         {Object.entries(kpis.inspections_by_month).map(([month, count]) => (
