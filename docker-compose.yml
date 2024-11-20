@@ -44,9 +44,14 @@ services:
       - AWS_SECRET_ACCESS_KEY
     networks:
       - my-network
+    volumes:
+      - backend-static:/usr/share/nginx/html/backend-static/
     container_name: api
 
 
 networks:
   my-network:
     driver: bridge
+    
+volumes:
+  backend-static:
