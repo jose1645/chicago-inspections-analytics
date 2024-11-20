@@ -20,7 +20,7 @@ const Dashboard = () => {
                 setKpis(response.data);
 
                 // Cargar el archivo TopoJSON desde utils/chicago.json
-                const topoResponse = await d3.json('./utils/chicago.json');
+                const topoResponse = await d3.json('/utils/chicago.json');
                 setTopoData(topoResponse);
 
                 // Extraer ubicaciones de inspección
