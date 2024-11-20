@@ -29,6 +29,8 @@ class KPIs(APIView):
                 'failed_inspections': failed_inspections,
                 'inspections_by_month': inspections_by_month.to_dict(),
                 'risk_distribution': risk_distribution.to_dict(),
+                'inspection_locations': data_from_s3[['latitude', 'longitude', 'inspection_date']].to_dict(orient='records')
+
             }
 
         except Exception as e:
