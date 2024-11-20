@@ -9,7 +9,7 @@ const ChicagoMap = () => {
     useEffect(() => {
         const fetchTopoData = async () => {
             try {
-                const response = await fetch('/utils/chicago.json');
+                const response = await fetch('/utils/simple.json');
                 if (!response.ok) {
                     throw new Error(`HTTP Error: ${response.status}`);
                 }
