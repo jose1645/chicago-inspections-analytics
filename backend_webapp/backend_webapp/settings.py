@@ -30,7 +30,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost',
     '127.0.0.1',
-    'chicago-inspections-analytics.synteck.org']
+    'chicago-inspections-analytics.synteck.org',
+    'api',
+    '[::1]'
+
+    ]
 
 CORS_ALLOWED_ORIGINS = [
     "https://chicago-inspections-analytics.synteck.org",  # URL del frontend en producción
