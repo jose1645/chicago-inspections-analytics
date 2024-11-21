@@ -18,7 +18,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      # 3. Construir imágenes Dockerf
+      # 3. Construir imágenes Docker
       - name: Build Docker images
         run: |
           docker build -t synteck428/my-dataproject-ingesta:latest -f Dockerfile.ingesta .
@@ -26,7 +26,7 @@ jobs:
           docker build -t synteck428/my-dataproject-webapp:latest -f Dockerfile.webapp .
           docker build -t synteck428/my-dataproject-backend_webapp:latest -f Dockerfile.backend_webapp .
 
-      # 4. Log in to Docker Hub
+      # 4. Iniciar sesión en Docker Hub
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login --username synteck428 --password-stdin
 
@@ -59,50 +59,41 @@ jobs:
       - name: Fetch docker-compose.yml
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} "
-            echo 'Preparando directorio de despliegue...';
-            mkdir -p ~/deploy && cd ~/deploy;
-
-            echo 'Configurando sparse-checkout para obtener solo docker-compose.yml...';
-            git init;
-            git remote add origin git@github.com:jose1645/chicago-inspections-analytics.git;
-            git config core.sparseCheckout true;
-            echo 'docker-compose.yml' > .git/info/sparse-checkout;
-            git pull origin master;
-
-            echo 'Archivo docker-compose.yml descargado.';
+            mkdir -p ~/deploy && cd ~/deploy
+            git init
+            git remote add origin git@github.com:jose1645/chicago-inspections-analytics.git
+            git config core.sparseCheckout true
+            echo 'docker-compose.yml' > .git/info/sparse-checkout
+            git pull origin master
           "
 
-      # 4. Desplegar servicios con Docker Composea
+      # 4. Desplegar servicios con Docker Compose
       - name: Deploy to EC2
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} "
-            echo 'Actualizando imágenes de Docker...';
-            docker pull synteck428/my-dataproject-ingesta:latest;
-            docker pull synteck428/my-dataproject-model:latest;
-            docker pull synteck428/my-dataproject-webapp:latest;
-            docker pull synteck428/my-dataproject-backend_webapp:latest;
+            echo 'Actualizando imágenes de Docker...'
+            docker pull synteck428/my-dataproject-ingesta:latest
+            docker pull synteck428/my-dataproject-model:latest
+            docker pull synteck428/my-dataproject-webapp:latest
+            docker pull synteck428/my-dataproject-backend_webapp:latest
 
-            echo 'Exportando variables de entorno...';
-            export SOCRATA_USERNAME=${{ secrets.SOCRATA_USERNAME }};
-            export SOCRATA_PASSWORD=${{ secrets.SOCRATA_PASSWORD }};
-            export SOCRATA_APP_TOKEN=${{ secrets.SOCRATA_APP_TOKEN }};
-            export S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }};
-            export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }};
-            export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }};
-            export SECRET_KEY=${{ secrets.SECRET_KEY }};
+            echo 'Exportando variables de entorno...'
+            export SOCRATA_USERNAME=\"${{ secrets.SOCRATA_USERNAME }}\"
+            export SOCRATA_PASSWORD=\"${{ secrets.SOCRATA_PASSWORD }}\"
+            export SOCRATA_APP_TOKEN=\"${{ secrets.SOCRATA_APP_TOKEN }}\"
+            export S3_BUCKET_NAME=\"${{ secrets.S3_BUCKET_NAME }}\"
+            export AWS_ACCESS_KEY_ID=\"${{ secrets.AWS_ACCESS_KEY_ID }}\"
+            export AWS_SECRET_ACCESS_KEY=\"${{ secrets.AWS_SECRET_ACCESS_KEY }}\"
+            export SECRET_KEY=\"${{ secrets.SECRET_KEY }}\"
 
+            echo 'Levantando servicios con Docker Compose...'
+            /usr/bin/docker-compose -f ~/deploy/docker-compose.yml down --remove-orphans
+            /usr/bin/docker-compose -f ~/deploy/docker-compose.yml build --no-cache
+            /usr/bin/docker-compose -f ~/deploy/docker-compose.yml up --force-recreate -d
 
-
-
-
-
-
-
-            echo 'Levantando servicios con Docker Compose...';
-            /usr/bin/docker-compose -f ~/deploy/docker-compose.yml down --remove-orphans;
-            /usr/bin/docker-compose -f ~/deploy/docker-compose.yml build --no-cache;
-            /usr/bin/docker-compose -f ~/deploy/docker-compose.yml up --force-recreate -d;
+            echo 'Ejecutando collectstatic...'
             docker exec -it api python manage.py collectstatic --noinput
-            echo 'Limpieza de imágenes y volúmenes no utilizados...';
-            docker system prune -f;
+
+            echo 'Limpieza de imágenes y volúmenes no utilizados...'
+            docker system prune -f
           "
