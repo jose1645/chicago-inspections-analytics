@@ -9,8 +9,14 @@ const ChicagoMap = ({ topoData, inspectionLocations }) => {
     const [currentDate, setCurrentDate] = useState(null); // Estado para mostrar la fecha dinámica
 
     useEffect(() => {
-        if (!topoData) {
-            console.error("TopoJSON no cargado.");
+        // Validación de datos de entrada
+        if (!topoData || !topoData.objects || !topoData.objects.zipcodes) {
+            console.error("TopoJSON no tiene la estructura esperada o está vacío.");
+            return;
+        }
+
+        if (!Array.isArray(inspectionLocations) || inspectionLocations.length === 0) {
+            console.error("inspectionLocations no es un array válido o está vacío.");
             return;
         }
 
@@ -31,7 +37,14 @@ const ChicagoMap = ({ topoData, inspectionLocations }) => {
 
         const path = d3.geoPath().projection(projection);
 
+        // Convertir TopoJSON a GeoJSON
         const zipcodes = topojson.feature(topoData, topoData.objects.zipcodes);
+
+        // Validar si las features existen en el TopoJSON
+        if (!zipcodes.features || !Array.isArray(zipcodes.features)) {
+            console.error("El archivo TopoJSON no contiene features válidas.");
+            return;
+        }
 
         // Dibujar ZIP codes
         svg.append('g')
@@ -44,7 +57,7 @@ const ChicagoMap = ({ topoData, inspectionLocations }) => {
             .attr('stroke', '#333') // Borde de los ZIP codes
             .attr('stroke-width', 0.5)
             .append('title') // Tooltip para mostrar el ZIP
-            .text(d => `ZIP: ${d.properties.ZIP}`);
+            .text(d => `ZIP: ${d.properties.ZIP || 'Desconocido'}`);
 
         // Ordenar inspecciones por fecha (cronológicamente)
         const sortedLocations = [...inspectionLocations].sort(
@@ -65,7 +78,7 @@ const ChicagoMap = ({ topoData, inspectionLocations }) => {
 
         // Animar los puntos para que aparezcan uno por uno
         points.transition()
-            .duration(100) // Duración de la animación (1 segundo)
+            .duration(100) // Duración de la animación (100 ms por punto)
             .delay((d, i) => i * 50) // Retraso basado en la posición del punto en el array ordenado
             .attr('cx', d => projection([d.longitude, d.latitude])[0]) // Posición final X
             .attr('cy', d => projection([d.longitude, d.latitude])[1]) // Posición final Y
