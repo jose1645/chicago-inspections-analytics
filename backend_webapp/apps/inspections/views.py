@@ -13,7 +13,7 @@ class InspectionPagination(PageNumberPagination):
 class KPIs(APIView):
     def get(self, request, *args, **kwargs):
         bucket_name = os.getenv("S3_BUCKET_NAME")
-        file_key = 'datos_limpios/datos_limpios/datos_limpios_2024-11-21_fe3e1ed7a40a26cef96cae50369e0e13.pkl'
+        file_key = 'datos_limpios/datos_limpios/datos_limpios_2024-11-13_08e32f34859ab66384461bbea8b811ce.pkl '
         
         try:
             # Cargar el archivo desde S3 como DataFrame
