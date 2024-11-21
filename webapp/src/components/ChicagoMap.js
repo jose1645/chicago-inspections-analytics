@@ -47,19 +47,37 @@ const ChicagoMap = ({ topoData, inspectionLocations }) => {
             .append('title') // Tooltip para mostrar el ZIP
             .text(d => `ZIP: ${d.properties.ZIP}`);
 
-        // Dibujar puntos de inspección
-        svg.append('g')
+        // Ordenar inspecciones por fecha (cronológicamente)
+        const sortedLocations = [...inspectionLocations].sort(
+            (a, b) => new Date(a.inspection_date) - new Date(b.inspection_date)
+        );
+
+        // Dibujar puntos de inspección con animación
+        const points = svg.append('g')
             .selectAll('circle')
-            .data(inspectionLocations)
+            .data(sortedLocations)
             .enter()
             .append('circle')
-            .attr('cx', d => projection([d.longitude, d.latitude])[0])
-            .attr('cy', d => projection([d.longitude, d.latitude])[1])
-            .attr('r', 5)
-            .attr('fill', 'blue')
-            .attr('opacity', 0.8)
-            .append('title')
-            .text(d => `Fecha: ${d.inspection_date}`);
+            .attr('cx', width / 2) // Comienza desde el centro del mapa
+            .attr('cy', height / 2) // Comienza desde el centro del mapa
+            .attr('r', 5) // Tamaño inicial del punto
+            .attr('fill', 'blue') // Color inicial del marcador
+            .attr('opacity', 0); // Invisible al inicio
+
+        // Animar los puntos para que aparezcan uno por uno
+        points.transition()
+            .duration(1000) // Duración de la animación (1 segundo)
+            .delay((d, i) => i * 500) // Retraso basado en la posición del punto en el array ordenado
+            .attr('cx', d => projection([d.longitude, d.latitude])[0]) // Posición final X
+            .attr('cy', d => projection([d.longitude, d.latitude])[1]) // Posición final Y
+            .attr('opacity', 0.8) // Los puntos se vuelven visibles gradualmente
+            .attr('r', 8) // Tamaño final del punto
+            .ease(d3.easeBounceOut) // Efecto de rebote
+            .on('end', function () {
+                d3.select(this)
+                    .append('title') // Agregar tooltip al final de la animación
+                    .text(d => `Fecha: ${d.inspection_date}`);
+            });
     }, [topoData, inspectionLocations]);
 
     return <svg ref={mapRef} className="chicago-map"></svg>;
