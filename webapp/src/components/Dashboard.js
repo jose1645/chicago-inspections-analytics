@@ -1,8 +1,7 @@
 // src/components/Dashboard.js
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import * as d3 from 'd3';
-import * as topojson from 'topojson-client';
 import '../styles/Dashboard.css';
 import ChicagoMap from './ChicagoMap';
 
@@ -12,8 +11,6 @@ const Dashboard = () => {
     const [error, setError] = useState(null); // Manejo de errores
     const [topoData, setTopoData] = useState(null); // TopoJSON de Chicago
     const [inspectionLocations, setInspectionLocations] = useState([]); // Ubicaciones de inspecciones
-    const [nextPage, setNextPage] = useState('/api/kpis?page=1'); // Siguiente página para inspecciones
-    const [loadingMore, setLoadingMore] = useState(false); // Indicador de carga para más ubicaciones
 
     // Cargar KPIs y TopoJSON al inicio
     useEffect(() => {
@@ -27,9 +24,8 @@ const Dashboard = () => {
                 const topoResponse = await d3.json('/utils/chicago.json');
                 setTopoData(topoResponse);
 
-                // Extraer las ubicaciones iniciales
-                setInspectionLocations(response.data.inspection_locations);
-                setNextPage(response.data.next); // Configurar el enlace a la siguiente página
+                // Cargar todas las ubicaciones de inspecciones
+                setInspectionLocations(response.data.inspection_locations || []);
             } catch (err) {
                 setError('Error al obtener los datos del servidor o el mapa.');
             } finally {
@@ -39,37 +35,6 @@ const Dashboard = () => {
 
         fetchData();
     }, []);
-
-    // Función para cargar más ubicaciones de inspecciones
-    const loadMoreLocations = useCallback(async () => {
-        if (!nextPage || loadingMore) return;
-
-        setLoadingMore(true);
-        try {
-            const response = await axios.get(nextPage);
-            setInspectionLocations(prev => [...prev, ...response.data.inspection_locations]);
-            setNextPage(response.data.next); // Actualiza el enlace a la siguiente página
-        } catch (err) {
-            console.error('Error al cargar más ubicaciones:', err);
-        } finally {
-            setLoadingMore(false);
-        }
-    }, [nextPage, loadingMore]);
-
-    // Configurar scroll infinito para cargar más ubicaciones
-    useEffect(() => {
-        const handleScroll = () => {
-            if (
-                window.innerHeight + document.documentElement.scrollTop
-                >= document.documentElement.offsetHeight - 200
-            ) {
-                loadMoreLocations();
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [loadMoreLocations]);
 
     if (loading) return <div className="dashboard">Cargando datos...</div>;
     if (error) return <div className="dashboard error">{error}</div>;
@@ -116,7 +81,6 @@ const Dashboard = () => {
                 <div className="chart">
                     <h3>Mapa de Inspecciones en Chicago</h3>
                     <ChicagoMap topoData={topoData} inspectionLocations={inspectionLocations} />
-                    {loadingMore && <p>Cargando más ubicaciones...</p>}
                 </div>
             </div>
         </div>
