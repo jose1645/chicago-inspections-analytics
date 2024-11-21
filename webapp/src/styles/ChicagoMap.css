@@ -1,21 +1,41 @@
 /* Estilos para el contenedor SVG del mapa */
 .chicago-map {
     display: block; /* Asegura que se comporte como un bloque */
-    margin: 0 auto; /* Centra el mapa horizontalmente */
+    margin: 20px auto; /* Centra el mapa horizontalmente con un margen superior */
     border: 2px solid #ccc; /* Borde claro */
     border-radius: 10px; /* Bordes redondeados */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
-    background-color: #f9f9f9; /* Fondo claro */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Sombra más pronunciada */
+    background-color: #ffffff; /* Fondo blanco */
 }
 
 /* Animación para los puntos del mapa */
 .chicago-map circle {
-    transition: all 0.3s ease-out; /* Transición suave para los cambios */
+    transition: all 0.5s ease-out; /* Transición más lenta para los cambios */
+    opacity: 0.8; /* Puntos ligeramente visibles inicialmente */
 }
 
 /* Efecto hover sobre los puntos */
 .chicago-map circle:hover {
     fill: orange; /* Cambia el color al pasar el cursor */
     cursor: pointer; /* Cambia el cursor a un puntero */
-    r: 10px; /* Aumenta el tamaño al pasar el cursor */
+    r: 12px; /* Aumenta el tamaño al pasar el cursor */
+    stroke: #333; /* Añade un borde oscuro al punto */
+    stroke-width: 1px; /* Ancho del borde */
+}
+
+/* Contenedor para la fecha dinámica */
+.date-container {
+    position: absolute; /* Posicionamiento absoluto dentro del mapa */
+    top: 10px; /* Separación desde el borde superior */
+    right: 10px; /* Separación desde el borde derecho */
+    background-color: rgba(255, 255, 255, 0.9); /* Fondo blanco semitransparente */
+    padding: 8px 15px; /* Espaciado interno */
+    border-radius: 8px; /* Bordes redondeados */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Sombra */
+    font-size: 14px; /* Tamaño del texto */
+    font-weight: bold; /* Texto en negrita */
+    color: #333; /* Color del texto */
+    z-index: 10; /* Asegura que esté por encima del mapa */
+    font-family: 'Arial', sans-serif; /* Fuente clara y moderna */
+    text-align: center; /* Centra el texto dentro del contenedor */
 }

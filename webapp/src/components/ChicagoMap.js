@@ -1,11 +1,12 @@
 // src/components/ChicagoMap.js
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import * as topojson from 'topojson-client';
 import '../styles/ChicagoMap.css';
 
 const ChicagoMap = ({ topoData, inspectionLocations }) => {
     const mapRef = useRef(null);
+    const [currentDate, setCurrentDate] = useState(null); // Estado para mostrar la fecha dinámica
 
     useEffect(() => {
         if (!topoData) {
@@ -23,7 +24,6 @@ const ChicagoMap = ({ topoData, inspectionLocations }) => {
 
         svg.selectAll("*").remove(); // Limpia cualquier render anterior
 
-        // Proyección y path
         const projection = d3.geoMercator()
             .center([-87.6298, 41.8781]) // Centra en Chicago
             .scale(50000) // Ajusta el nivel de zoom
@@ -31,7 +31,6 @@ const ChicagoMap = ({ topoData, inspectionLocations }) => {
 
         const path = d3.geoPath().projection(projection);
 
-        // Convertir TopoJSON a GeoJSON
         const zipcodes = topojson.feature(topoData, topoData.objects.zipcodes);
 
         // Dibujar ZIP codes
@@ -73,6 +72,12 @@ const ChicagoMap = ({ topoData, inspectionLocations }) => {
             .attr('opacity', 0.8) // Los puntos se vuelven visibles gradualmente
             .attr('r', 8) // Tamaño final del punto
             .ease(d3.easeBounceOut) // Efecto de rebote
+            .on('start', function (d) {
+                // Cambiar la fecha mostrada dinámicamente
+                const date = new Date(d.inspection_date);
+                const monthYear = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+                setCurrentDate(monthYear); // Actualiza el estado con el mes y año
+            })
             .on('end', function () {
                 d3.select(this)
                     .append('title') // Agregar tooltip al final de la animación
@@ -80,7 +85,30 @@ const ChicagoMap = ({ topoData, inspectionLocations }) => {
             });
     }, [topoData, inspectionLocations]);
 
-    return <svg ref={mapRef} className="chicago-map"></svg>;
+    return (
+        <div style={{ position: 'relative', width: '800px', height: '600px' }}>
+            {/* Contenedor del SVG */}
+            <svg ref={mapRef} className="chicago-map"></svg>
+            {/* Fecha dinámica en la esquina superior derecha */}
+            {currentDate && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: '10px',
+                        right: '10px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                        padding: '5px 10px',
+                        borderRadius: '5px',
+                        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+                        fontWeight: 'bold',
+                        fontSize: '14px'
+                    }}
+                >
+                    {currentDate}
+                </div>
+            )}
+        </div>
+    );
 };
 
 export default ChicagoMap;
