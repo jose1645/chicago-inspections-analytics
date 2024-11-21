@@ -9,6 +9,11 @@ const ChicagoMap = ({ inspectionLocations }) => {
     useEffect(() => {
         if (inspectionLocations.length === 0) return;
 
+        // Ordenar las inspecciones por fecha (cronológicamente)
+        const sortedLocations = [...inspectionLocations].sort(
+            (a, b) => new Date(a.inspection_date) - new Date(b.inspection_date)
+        );
+
         // Configuración del mapa
         const width = 800;
         const height = 600;
@@ -26,22 +31,32 @@ const ChicagoMap = ({ inspectionLocations }) => {
             .scale(50000) // Escala del mapa
             .translate([width / 2, height / 2]);
 
-        const path = d3.geoPath().projection(projection);
-
-        // Dibujar puntos de inspección
-        svg.append('g')
+        // Dibujar puntos de inspección con animación
+        const points = svg.append('g')
             .selectAll('circle')
-            .data(inspectionLocations)
+            .data(sortedLocations) // Usamos los datos ordenados
             .enter()
             .append('circle')
+            .attr('cx', width / 2) // Comienza desde el centro del mapa
+            .attr('cy', height / 2) // Comienza desde el centro del mapa
+            .attr('r', 5) // Tamaño inicial del punto
+            .attr('fill', 'blue') // Color del marcador
+            .attr('opacity', 0);
+
+        // Animación para mover los puntos en orden cronológico
+        points.transition()
+            .duration(1000) // Duración de la animación (1 segundo)
+            .delay((d, i) => i * 500) // Retraso basado en la posición del punto en el array ordenado
             .attr('cx', d => projection([d.longitude, d.latitude])[0])
             .attr('cy', d => projection([d.longitude, d.latitude])[1])
-            .attr('r', 5) // Tamaño del punto
-            .attr('fill', 'blue') // Color del marcador
-            .attr('opacity', 0.7)
-            .append('title') // Agregar tooltip
-            .text(d => `Fecha: ${d.inspection_date}`);
-
+            .attr('opacity', 0.8) // Los puntos se vuelven visibles gradualmente
+            .attr('r', 8) // Tamaño final del punto
+            .ease(d3.easeBounceOut) // Efecto de rebote
+            .on('end', function () {
+                d3.select(this)
+                    .append('title') // Agregar tooltip al final de la animación
+                    .text(d => `Fecha: ${d.inspection_date}`);
+            });
     }, [inspectionLocations]);
 
     return <svg ref={mapRef} className="chicago-map"></svg>;

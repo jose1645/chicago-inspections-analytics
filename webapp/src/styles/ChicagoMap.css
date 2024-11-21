@@ -1,0 +1,21 @@
+/* Estilos para el contenedor SVG del mapa */
+.chicago-map {
+    display: block; /* Asegura que se comporte como un bloque */
+    margin: 0 auto; /* Centra el mapa horizontalmente */
+    border: 2px solid #ccc; /* Borde claro */
+    border-radius: 10px; /* Bordes redondeados */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
+    background-color: #f9f9f9; /* Fondo claro */
+}
+
+/* Animación para los puntos del mapa */
+.chicago-map circle {
+    transition: all 0.3s ease-out; /* Transición suave para los cambios */
+}
+
+/* Efecto hover sobre los puntos */
+.chicago-map circle:hover {
+    fill: orange; /* Cambia el color al pasar el cursor */
+    cursor: pointer; /* Cambia el cursor a un puntero */
+    r: 10px; /* Aumenta el tamaño al pasar el cursor */
+}
