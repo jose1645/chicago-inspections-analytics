@@ -1,70 +1,50 @@
-import React, { useRef, useEffect } from "react";
-import * as d3 from "d3";
-import * as topojson from "topojson-client";
+// src/components/ChicagoMap.js
+import React, { useEffect, useRef } from 'react';
+import * as d3 from 'd3';
+import '../styles/ChicagoMap.css';
 
-const ChicagoMap = () => {
-    const svgRef = useRef(null);
+const ChicagoMap = ({ inspectionLocations }) => {
+    const mapRef = useRef(null);
 
     useEffect(() => {
-        const renderMap = async () => {
-            try {
-                // Cargar el archivo TopoJSON
-                const topoData = await d3.json("/utils/chicago.json");
-                console.log("TopoJSON cargado:", topoData);
+        if (inspectionLocations.length === 0) return;
 
-                const zipcodes = topojson.feature(topoData, topoData.objects.zipcodes);
-                console.log("GeoJSON generado:", zipcodes);
+        // Configuración del mapa
+        const width = 800;
+        const height = 600;
 
-                const width = 960;
-                const height = 600;
+        // Crear un SVG para el mapa
+        const svg = d3.select(mapRef.current)
+            .attr('width', width)
+            .attr('height', height);
 
-                const svg = d3.select(svgRef.current)
-                    .attr("viewBox", [0, 0, width, height])
-                    .style("background", "#f0f0f0");
+        svg.selectAll("*").remove(); // Limpia cualquier mapa anterior
 
-                const projection = d3.geoMercator()
-                    .scale(100000)
-                    .center([-87.6298, 41.8781])
-                    .translate([width / 2, height / 2]);
+        // Proyección y escalas
+        const projection = d3.geoMercator()
+            .center([-87.6298, 41.8781]) // Centra en Chicago
+            .scale(50000) // Escala del mapa
+            .translate([width / 2, height / 2]);
 
-                const path = d3.geoPath(projection);
+        const path = d3.geoPath().projection(projection);
 
-                // Dibujar las áreas del mapa
-                svg.append("g")
-                    .selectAll("path")
-                    .data(zipcodes.features)
-                    .join("path")
-                    .attr("d", path)
-                    .attr("fill", "#ddd")
-                    .attr("stroke", "#333")
-                    .attr("stroke-width", 0.5);
+        // Dibujar puntos de inspección
+        svg.append('g')
+            .selectAll('circle')
+            .data(inspectionLocations)
+            .enter()
+            .append('circle')
+            .attr('cx', d => projection([d.longitude, d.latitude])[0])
+            .attr('cy', d => projection([d.longitude, d.latitude])[1])
+            .attr('r', 5) // Tamaño del punto
+            .attr('fill', 'blue') // Color del marcador
+            .attr('opacity', 0.7)
+            .append('title') // Agregar tooltip
+            .text(d => `Fecha: ${d.inspection_date}`);
 
-                // Agregar puntos de inspecciones
-                const inspectionLocations = [
-                    { latitude: 41.686017, longitude: -87.620976 },
-                    { latitude: 41.924043, longitude: -87.769032 },
-                    { latitude: 41.876965, longitude: -87.633443 },
-                ];
+    }, [inspectionLocations]);
 
-                svg.append("g")
-                    .selectAll("circle")
-                    .data(inspectionLocations)
-                    .join("circle")
-                    .attr("cx", d => projection([d.longitude, d.latitude])[0])
-                    .attr("cy", d => projection([d.longitude, d.latitude])[1])
-                    .attr("r", 4)
-                    .attr("fill", "red")
-                    .attr("opacity", 0.7);
-
-            } catch (error) {
-                console.error("Error al renderizar el mapa:", error);
-            }
-        };
-
-        renderMap();
-    }, []);
-
-    return <svg ref={svgRef}></svg>;
+    return <svg ref={mapRef} className="chicago-map"></svg>;
 };
 
 export default ChicagoMap;
