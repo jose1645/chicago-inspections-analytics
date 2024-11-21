@@ -77,6 +77,7 @@ const Dashboard = () => {
                 </div>
                 <div className="chart">
                     <h3>Mapa de Inspecciones en Chicago</h3>
+                    <ChicagoMap topoData={topoData} inspectionLocations={inspectionLocations} />
                 </div>
             </div>
         </div>
