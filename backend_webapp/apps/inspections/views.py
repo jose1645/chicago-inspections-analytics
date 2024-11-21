@@ -1,14 +1,8 @@
 import os
 import pandas as pd
 from rest_framework.views import APIView
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from .utils import load_file_from_s3  # Función para cargar archivos desde S3
-
-class InspectionPagination(PageNumberPagination):
-    page_size = 100  # Número de registros por página
-    page_size_query_param = 'page_size'
-    max_page_size = 1000
 
 class KPIs(APIView):
     def get(self, request, *args, **kwargs):
@@ -37,10 +31,8 @@ class KPIs(APIView):
             inspections_by_month = data_from_s3.groupby(data_from_s3['inspection_date'].dt.month).size()
             risk_distribution = data_from_s3['risk'].value_counts()
 
-            # Configurar paginación para las ubicaciones
-            paginator = InspectionPagination()
+            # Preparar las ubicaciones
             inspection_locations = data_from_s3[['latitude', 'longitude', 'inspection_date']].to_dict(orient='records')
-            paginated_locations = paginator.paginate_queryset(inspection_locations, request)
 
             # Convertir los resultados a JSON-friendly
             kpis = {
@@ -49,11 +41,11 @@ class KPIs(APIView):
                 'failed_inspections': failed_inspections,
                 'inspections_by_month': inspections_by_month.to_dict(),
                 'risk_distribution': risk_distribution.to_dict(),
-                'inspection_locations': paginated_locations
+                'inspection_locations': inspection_locations
             }
 
         except Exception as e:
             return Response({"error": f"Error al calcular KPIs: {str(e)}"}, status=500)
 
-        # Usar el paginador para la respuesta
-        return paginator.get_paginated_response(kpis)
+        # Respuesta final con KPIs completos
+        return Response(kpis)
