@@ -72,7 +72,7 @@ jobs:
             echo 'Archivo docker-compose.yml descargado.';
           "
 
-      # 4. Desplegar servicios con Docker Composea
+      # 4. Desplegar servicios con Docker Composeaj
       - name: Deploy to EC2
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_INSTANCE_IP }} "
