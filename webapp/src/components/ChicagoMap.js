@@ -65,8 +65,8 @@ const ChicagoMap = ({ topoData, inspectionLocations }) => {
 
         // Animar los puntos para que aparezcan uno por uno
         points.transition()
-            .duration(1000) // Duración de la animación (1 segundo)
-            .delay((d, i) => i * 500) // Retraso basado en la posición del punto en el array ordenado
+            .duration(100) // Duración de la animación (1 segundo)
+            .delay((d, i) => i * 50) // Retraso basado en la posición del punto en el array ordenado
             .attr('cx', d => projection([d.longitude, d.latitude])[0]) // Posición final X
             .attr('cy', d => projection([d.longitude, d.latitude])[1]) // Posición final Y
             .attr('opacity', 0.8) // Los puntos se vuelven visibles gradualmente

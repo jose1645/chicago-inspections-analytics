@@ -7,7 +7,7 @@ from .utils import load_file_from_s3  # Importar función para cargar archivos d
 class KPIs(APIView):
     def get(self, request, *args, **kwargs):
         bucket_name = os.getenv("S3_BUCKET_NAME")
-        file_key = 'datos_limpios/datos_limpios/datos_limpios_2024-11-13_e3ca5725ffb4bb52e6d8423d5f093220.pkl'
+        file_key = 'datos_limpios/datos_limpios/datos_limpios_2024-11-21_fe3e1ed7a40a26cef96cae50369e0e13.pkl'
         
         try:
             # Cargar el archivo desde S3 como DataFrame
@@ -30,7 +30,6 @@ class KPIs(APIView):
                 'inspections_by_month': inspections_by_month.to_dict(),
                 'risk_distribution': risk_distribution.to_dict(),
                 'inspection_locations': data_from_s3[['latitude', 'longitude', 'inspection_date']].to_dict(orient='records')
-
             }
 
         except Exception as e:
