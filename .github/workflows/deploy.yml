@@ -98,7 +98,7 @@ jobs:
 
             echo 'Levantando servicios con Docker Compose...';
             /usr/bin/docker-compose -f ~/deploy/docker-compose.yml down --remove-orphans;
-            /usr/bin/docker-compose -f ~/deploy/docker-compose.yml up -d;
+            /usr/bin/docker-compose -f ~/deploy/docker-compose.yml up --build --force-recreate -d;
             docker exec -it api python manage.py collectstatic --noinput
             echo 'Limpieza de imágenes y volúmenes no utilizados...';
             docker system prune -f;
