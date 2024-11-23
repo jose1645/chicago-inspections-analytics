@@ -46,8 +46,11 @@ const ChicagoMap = ({ topoData, inspectionLocations }) => {
             .append('title') // Tooltip para mostrar el ZIP
             .text(d => `ZIP: ${d.properties.ZIP}`);
 
-        // Ordenar inspecciones por fecha (cronológicamente)
-        const sortedLocations = [...inspectionLocations].sort(
+        // Filtro por resultados específicos (e.g., solo inspecciones aprobadas)
+        const filteredLocations = inspectionLocations.filter(location => location.results === "Pass");
+
+        // Ordenar inspecciones filtradas por fecha (cronológicamente)
+        const sortedLocations = [...filteredLocations].sort(
             (a, b) => new Date(a.inspection_date) - new Date(b.inspection_date)
         );
 
@@ -65,7 +68,7 @@ const ChicagoMap = ({ topoData, inspectionLocations }) => {
 
         // Animar los puntos para que aparezcan uno por uno
         points.transition()
-            .duration(100) // Duración de la animación (1 segundo)
+            .duration(100) // Duración de la animación
             .delay((d, i) => i * 50) // Retraso basado en la posición del punto en el array ordenado
             .attr('cx', d => projection([d.longitude, d.latitude])[0]) // Posición final X
             .attr('cy', d => projection([d.longitude, d.latitude])[1]) // Posición final Y

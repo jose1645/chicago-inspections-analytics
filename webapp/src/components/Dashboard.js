@@ -12,6 +12,7 @@ const Dashboard = () => {
     const [error, setError] = useState(null);
     const [topoData, setTopoData] = useState(null); // Almacenar el TopoJSON
     const [inspectionLocations, setInspectionLocations] = useState([]); // Ubicaciones de inspecciones
+    const [filterResult, setFilterResult] = useState("Pass"); // Filtro dinámico por resultado
 
     useEffect(() => {
         const fetchData = async () => {
@@ -39,10 +40,14 @@ const Dashboard = () => {
     if (loading) return <div className="dashboard">Cargando datos...</div>;
     if (error) return <div className="dashboard error">{error}</div>;
 
+    // Aplicar filtro dinámico a las ubicaciones
+    const filteredLocations = inspectionLocations.filter(location => location.results === filterResult);
+
     return (
         <div className="dashboard">
             <h2>Dashboard de KPIs</h2>
             <div className="dashboard-charts">
+                {/* KPIs */}
                 <div className="chart">
                     <h3>Total de Inspecciones</h3>
                     <p>{kpis.total_inspections}</p>
@@ -65,7 +70,6 @@ const Dashboard = () => {
                         ))}
                     </ul>
                 </div>
-                
                 <div className="chart">
                     <h3>Distribución de Riesgo</h3>
                     <ul>
@@ -76,14 +80,27 @@ const Dashboard = () => {
                         ))}
                     </ul>
                 </div>
+
+                {/* Mapa con filtro dinámico */}
                 <div className="chart">
                     <h3>Mapa de Inspecciones en Chicago</h3>
-                    <ChicagoMap topoData={topoData} inspectionLocations={inspectionLocations} />
+                    <div style={{ marginBottom: '10px' }}>
+                        <label htmlFor="filter-result">Filtrar por resultado: </label>
+                        <select
+                            id="filter-result"
+                            value={filterResult}
+                            onChange={(e) => setFilterResult(e.target.value)}
+                        >
+                            <option value="Pass">Aprobadas</option>
+                            <option value="Fail">Rechazadas</option>
+                            <option value="Pass w/ Conditions">Aprobadas con condiciones</option>
+                        </select>
+                    </div>
+                    <ChicagoMap topoData={topoData} inspectionLocations={filteredLocations} />
                 </div>
             </div>
         </div>
     );
 };
-
 
 export default Dashboard;
