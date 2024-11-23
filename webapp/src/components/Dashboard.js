@@ -1,4 +1,3 @@
-// src/components/Dashboard.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import * as d3 from 'd3';
@@ -12,7 +11,6 @@ const Dashboard = () => {
     const [error, setError] = useState(null);
     const [topoData, setTopoData] = useState(null); // Almacenar el TopoJSON
     const [inspectionLocations, setInspectionLocations] = useState([]); // Ubicaciones de inspecciones
-    const [filterResult, setFilterResult] = useState("Pass"); // Filtro dinámico por resultado
 
     useEffect(() => {
         const fetchData = async () => {
@@ -21,7 +19,7 @@ const Dashboard = () => {
                 const response = await axios.get('/api/kpis');
                 setKpis(response.data);
 
-                // Cargar el archivo TopoJSON desde utils/chicago.json
+                // Cargar el archivo TopoJSON desde utils/chicago.jsona
                 const topoResponse = await d3.json('/utils/chicago.json');
                 setTopoData(topoResponse);
 
@@ -78,10 +76,10 @@ const Dashboard = () => {
                     </ul>
                 </div>
 
-                {/* Mapa con filtro dinámico */}
+                {/* Mapa sin filtro dinámico */}
                 <div className="chart">
                     <h3>Mapa de Inspecciones en Chicago</h3>
-                    <ChicagoMap topoData={topoData} inspectionLocations={filteredLocations} />
+                    <ChicagoMap topoData={topoData} inspectionLocations={inspectionLocations} />
                 </div>
             </div>
         </div>
@@ -89,3 +87,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
