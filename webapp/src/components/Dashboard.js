@@ -40,9 +40,6 @@ const Dashboard = () => {
     if (loading) return <div className="dashboard">Cargando datos...</div>;
     if (error) return <div className="dashboard error">{error}</div>;
 
-    // Aplicar filtro dinámico a las ubicaciones
-    const filteredLocations = inspectionLocations.filter(location => location.results === filterResult);
-
     return (
         <div className="dashboard">
             <h2>Dashboard de KPIs</h2>
@@ -84,18 +81,6 @@ const Dashboard = () => {
                 {/* Mapa con filtro dinámico */}
                 <div className="chart">
                     <h3>Mapa de Inspecciones en Chicago</h3>
-                    <div style={{ marginBottom: '10px' }}>
-                        <label htmlFor="filter-result">Filtrar por resultado: </label>
-                        <select
-                            id="filter-result"
-                            value={filterResult}
-                            onChange={(e) => setFilterResult(e.target.value)}
-                        >
-                            <option value="Pass">Aprobadas</option>
-                            <option value="Fail">Rechazadas</option>
-                            <option value="Pass w/ Conditions">Aprobadas con condiciones</option>
-                        </select>
-                    </div>
                     <ChicagoMap topoData={topoData} inspectionLocations={filteredLocations} />
                 </div>
             </div>

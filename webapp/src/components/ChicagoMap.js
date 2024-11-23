@@ -1,4 +1,3 @@
-// src/components/ChicagoMap.js
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import * as topojson from 'topojson-client';
@@ -46,11 +45,13 @@ const ChicagoMap = ({ topoData, inspectionLocations }) => {
             .append('title') // Tooltip para mostrar el ZIP
             .text(d => `ZIP: ${d.properties.ZIP}`);
 
-        // Filtro por resultados específicos (e.g., solo inspecciones aprobadas)
-        const filteredLocations = inspectionLocations.filter(location => location.results === "Pass");
+        // Escala de colores basada en resultados
+        const colorScale = d3.scaleOrdinal()
+            .domain(["Pass", "Fail", "Pass w/ Conditions"])
+            .range(["green", "red", "orange"]); // Asignar colores según el valor de 'results'
 
-        // Ordenar inspecciones filtradas por fecha (cronológicamente)
-        const sortedLocations = [...filteredLocations].sort(
+        // Ordenar inspecciones por fecha (cronológicamente)
+        const sortedLocations = [...inspectionLocations].sort(
             (a, b) => new Date(a.inspection_date) - new Date(b.inspection_date)
         );
 
@@ -63,7 +64,7 @@ const ChicagoMap = ({ topoData, inspectionLocations }) => {
             .attr('cx', width / 2) // Comienza desde el centro del mapa
             .attr('cy', height / 2) // Comienza desde el centro del mapa
             .attr('r', 5) // Tamaño inicial del punto
-            .attr('fill', 'blue') // Color inicial del marcador
+            .attr('fill', d => colorScale(d.results)) // Color dinámico basado en 'results'
             .attr('opacity', 0); // Invisible al inicio
 
         // Animar los puntos para que aparezcan uno por uno
@@ -84,7 +85,7 @@ const ChicagoMap = ({ topoData, inspectionLocations }) => {
             .on('end', function () {
                 d3.select(this)
                     .append('title') // Agregar tooltip al final de la animación
-                    .text(d => `Fecha: ${d.inspection_date}`);
+                    .text(d => `Resultado: ${d.results}\nFecha: ${d.inspection_date}`);
             });
     }, [topoData, inspectionLocations]);
 
