@@ -21,7 +21,6 @@ class KPIs(APIView):
             failed_inspections = len(data_from_s3[data_from_s3['results'] == 'Fail'])
             inspections_by_month = data_from_s3.groupby(data_from_s3['inspection_date'].dt.month).size()
             risk_distribution = data_from_s3['risk'].value_counts()
-            results= data_from_s3[results]
 
             # Convertir los resultados a JSON-friendly
             kpis = {
@@ -30,8 +29,7 @@ class KPIs(APIView):
                 'failed_inspections': failed_inspections,
                 'inspections_by_month': inspections_by_month.to_dict(),
                 'risk_distribution': risk_distribution.to_dict(),
-                'inspection_locations': data_from_s3[['latitude', 'longitude', 'inspection_date']].to_dict(orient='records'),
-                'results': results
+                'inspection_locations': data_from_s3[['latitude', 'longitude', 'inspection_date','results']].to_dict(orient='records'),
             }
 
         except Exception as e:
