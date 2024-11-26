@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import * as d3 from 'd3';
 import * as topojson from 'topojson-client';
-import '../styles/HeatMap.css';
+import '../styles/ChicagoHeatMap.css';
 
 const HeatMap = () => {
     const [topoData, setTopoData] = useState(null); // Almacena el TopoJSON
