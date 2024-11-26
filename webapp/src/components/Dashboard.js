@@ -90,21 +90,28 @@ const Dashboard = () => {
                     </>
                 )}
 
-                {/* Mapa con puntos de inspección */}
-                {topoData && inspectionLocations.length > 0 && (
-                    <div className="chart">
-                        <h3>Mapa de Inspecciones en Chicago</h3>
-                        <ChicagoMap topoData={topoData} inspectionLocations={inspectionLocations} />
-                    </div>
-                )}
+<div className="dashboard-charts">
+    {/* Mapa con puntos de inspección */}
+    {Array.isArray(inspectionLocations) && inspectionLocations.length > 0 && (
+        <div className="chart">
+            <h3>Mapa de Inspecciones en Chicago</h3>
+            <ChicagoMap topoData={topoData} inspectionLocations={inspectionLocations} />
+        </div>
+    )}
 
-                {/* Mapa de calor */}
-                {topoData && heatmapData.length > 0 && (
-                    <div className="chart">
-                        <h3>Mapa de Calor de Inspecciones</h3>
-                        <ChicagoHeatMap topoData={topoData} backendData={{ inspection_locations: heatmapData }} />
-                    </div>
-                )}
+    {/* Mapa de calor */}
+    {Array.isArray(heatmapData) && heatmapData.length > 0 && (
+        <div className="chart">
+            <h3>Mapa de Calor de Inspecciones</h3>
+            <ChicagoHeatMap topoData={topoData} backendData={{ inspection_locations: heatmapData }} />
+        </div>
+    )}
+</div>
+
+
+
+
+
             </div>
         </div>
     );
