@@ -102,16 +102,45 @@ def transformar_fechas(df, columnas):
     return df
 
 def existe_archivo_limpio(bucket, ruta_limpia, etag):
-    archivo_limpio = f"{ruta_limpia}/datos_limpios/datos_limpios_{datetime.today().strftime('%Y-%m-%d')}_{etag}.pkl"
+    filtro="datos_limpios"
     try:
-        response = s3.list_objects_v2(Bucket=bucket, Prefix=archivo_limpio)
+        # Listar todos los objetos del bucket
+        response = s3.list_objects_v2(Bucket=bucket)
+
         if 'Contents' in response:
-            logging.info(f"El archivo limpio {archivo_limpio} ya existe en S3.")
-            return True
+            # Buscar si alguno de los objetos contiene el etag en su clave
+            for obj in response['Contents']:
+                if etag in obj['Key'] and filtro in obj['key']:
+                    
+                    logging.info(f"El archivo {obj['Key']} con etag {etag} ya existe en S3.")
+                    return True
+
+        logging.info(f"No se encontró un archivo con el etag {etag} en el bucket {bucket}.")
         return False
+    except s3.exceptions.NoSuchBucket as e:
+        logging.error(f"El bucket {bucket} no existe: {e}")
+    except s3.exceptions.ClientError as e:
+        logging.error(f"Error de cliente al verificar el archivo: {e}")
     except Exception as e:
-        logging.error(f"Error al verificar la existencia del archivo limpio: {e}")
-        return False
+        logging.error(f"Error inesperado al verificar el archivo: {e}")
+    
+    return False
+
+
+
+
+
+
+    #archivo_limpio = f"{ruta_limpia}/datos_limpios/datos_limpios_{datetime.today().strftime('%Y-%m-%d')}_{etag}.pkl"
+    #try:
+    #    response = s3.list_objects_v2(Bucket=bucket, Prefix=archivo_limpio)
+    #    if 'Contents' in response:
+    #        logging.info(f"El archivo limpio {archivo_limpio} ya existe en S3.")
+    #        return True
+    #    return False
+    #except Exception as e:
+    #    logging.error(f"Error al verificar la existencia del archivo limpio: {e}")
+    #    return False
 
 def guardar_datos_s3(bucket, ruta, df, etag):
     fecha = datetime.today().strftime('%Y-%m-%d')

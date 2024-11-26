@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import * as d3 from 'd3';
-import * as topojson from 'topojson-client';
 import '../styles/Dashboard.css';
 import ChicagoMap from './ChicagoMap';
+import ChicagoHeatMap from './ChicagoHeatMap';
 
 const Dashboard = () => {
     const [kpis, setKpis] = useState(null);
@@ -11,6 +11,7 @@ const Dashboard = () => {
     const [error, setError] = useState(null);
     const [topoData, setTopoData] = useState(null); // Almacenar el TopoJSON
     const [inspectionLocations, setInspectionLocations] = useState([]); // Ubicaciones de inspecciones
+    const [heatmapData, setHeatmapData] = useState([]); // Datos para el mapa de calor
 
     useEffect(() => {
         const fetchData = async () => {
@@ -19,12 +20,16 @@ const Dashboard = () => {
                 const response = await axios.get('/api/kpis');
                 setKpis(response.data);
 
-                // Cargar el archivo TopoJSON desde utils/chicago.jsona
+                // Cargar el archivo TopoJSON
                 const topoResponse = await d3.json('/utils/chicago.json');
                 setTopoData(topoResponse);
 
                 // Extraer ubicaciones de inspección
                 setInspectionLocations(response.data.inspection_locations);
+
+                // Cargar datos para el mapa de calor
+                const heatmapResponse = await axios.get('/api/heatmap');
+                setHeatmapData(heatmapResponse.data.inspection_locations);
             } catch (err) {
                 setError('Error al obtener los datos del servidor o el mapa.');
             } finally {
@@ -76,10 +81,16 @@ const Dashboard = () => {
                     </ul>
                 </div>
 
-                {/* Mapa sin filtro dinámico */}
+                {/* Mapa con puntos de inspección */}
                 <div className="chart">
                     <h3>Mapa de Inspecciones en Chicago</h3>
                     <ChicagoMap topoData={topoData} inspectionLocations={inspectionLocations} />
+                </div>
+
+                {/* Mapa de calor */}
+                <div className="chart">
+                    <h3>Mapa de Calor de Inspecciones</h3>
+                    <ChicagoHeatMap topoData={topoData} backendData={{ inspection_locations: heatmapData }} />
                 </div>
             </div>
         </div>
@@ -87,4 +98,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
