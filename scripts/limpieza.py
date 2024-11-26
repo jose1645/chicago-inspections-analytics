@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 import pickle
-import time
 import tempfile
 import logging
 from logging.handlers import TimedRotatingFileHandler
@@ -20,9 +19,6 @@ logging.basicConfig(
 )
 
 # Carga de variables de entorno
-socrata_username = os.getenv("SOCRATA_USERNAME")
-socrata_password = os.getenv("SOCRATA_PASSWORD")
-socrata_app_token = os.getenv("SOCRATA_APP_TOKEN")
 aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
 aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 s3_bucket = os.getenv("S3_BUCKET_NAME")
@@ -60,58 +56,17 @@ def descargar_archivo_s3(bucket, archivo_obj):
         logging.error(f"Error al descargar el archivo {archivo} de S3: {e}")
         return None, None
 
-def transformar_ingesta(data):
-    logging.info("Transformando datos de ingesta.")
-    df = pd.DataFrame(data)
-    return df
-
-def faltantes(df):
-    logging.info("Verificando valores faltantes.")
-    missing_data = df.isnull().sum()
-    logging.info(f"Valores faltantes por columna:\n{missing_data}")
-
-def elimina_faltantes_latitud_longitud(df, columnas):
-    logging.info(f"Eliminando filas con valores nulos en las columnas {columnas}.")
-    before_rows = len(df)
-    df = df.dropna(subset=columnas)
-    after_rows = len(df)
-    logging.info(f"Filas eliminadas: {before_rows - after_rows}")
-    return df
-
-def imputar_faltantes(df, columna, valor_imputar):
-    logging.info(f"Imputando valores faltantes en la columna {columna}.")
-    df[columna].fillna(valor_imputar)
-    return df
-
-def transformar_enteros(df, columnas):
-    logging.info(f"Transformando columnas {columnas} a enteros.")
-    for columna in columnas:
-        df[columna] = df[columna].astype('Int64')
-    return df
-
-def transformar_flotantes(df, columnas):
-    logging.info(f"Transformando columnas {columnas} a flotantes.")
-    for columna in columnas:
-        df[columna] = df[columna].astype(float)
-    return df
-
-def transformar_fechas(df, columnas):
-    logging.info(f"Transformando columnas {columnas} a fechas.")
-    for columna in columnas:
-        df[columna] = pd.to_datetime(df[columna], errors='coerce')
-    return df
-
 def existe_archivo_limpio(bucket, ruta_limpia, etag):
-    filtro="datos_limpios"
+    """
+    Verifica si ya existe un archivo limpio con el mismo ETag en el bucket S3.
+    """
     try:
-        # Listar todos los objetos del bucket
-        response = s3.list_objects_v2(Bucket=bucket)
+        response = s3.list_objects_v2(Bucket=bucket, Prefix=ruta_limpia)
 
         if 'Contents' in response:
-            # Buscar si alguno de los objetos contiene el etag en su clave
+            # Buscar si el ETag ya está en el nombre del archivo
             for obj in response['Contents']:
-                if etag in obj['Key'] and filtro in obj['key']:
-                    
+                if etag in obj['Key']:
                     logging.info(f"El archivo {obj['Key']} con etag {etag} ya existe en S3.")
                     return True
 
@@ -126,37 +81,37 @@ def existe_archivo_limpio(bucket, ruta_limpia, etag):
     
     return False
 
-
-
-
-
-
-    #archivo_limpio = f"{ruta_limpia}/datos_limpios/datos_limpios_{datetime.today().strftime('%Y-%m-%d')}_{etag}.pkl"
-    #try:
-    #    response = s3.list_objects_v2(Bucket=bucket, Prefix=archivo_limpio)
-    #    if 'Contents' in response:
-    #        logging.info(f"El archivo limpio {archivo_limpio} ya existe en S3.")
-    #        return True
-    #    return False
-    #except Exception as e:
-    #    logging.error(f"Error al verificar la existencia del archivo limpio: {e}")
-    #    return False
+def transformar_ingesta(data):
+    logging.info("Transformando datos de ingesta.")
+    df = pd.DataFrame(data)
+    return df
 
 def guardar_datos_s3(bucket, ruta, df, etag):
+    """
+    Guarda el DataFrame en S3 si no existe ya un archivo con el mismo ETag.
+    """
     fecha = datetime.today().strftime('%Y-%m-%d')
     archivo = f"{ruta}/datos_limpios/datos_limpios_{fecha}_{etag}.pkl"
-    
+
+    # Verificar si ya existe un archivo con este ETag
+    if existe_archivo_limpio(bucket, ruta, etag):
+        logging.info(f"El archivo {archivo} con etag {etag} ya existe. No se guardará.")
+        return
+
     # Guardar el DataFrame en un archivo temporal
     with tempfile.NamedTemporaryFile(delete=False) as temp_file:
         pickle.dump(df, temp_file)
         temp_file_path = temp_file.name  # Ruta al archivo temporal
-    
-    # Subir directamente el archivo temporal a S3
+
+    # Subir el archivo temporal a S3
     try:
         s3.upload_file(temp_file_path, bucket, archivo)
         logging.info(f"Archivo limpio guardado en S3: {archivo}")
     except Exception as e:
         logging.error(f"Error al guardar el archivo limpio en S3: {e}")
+    finally:
+        # Eliminar el archivo temporal
+        os.remove(temp_file_path)
 
 def procesar_archivos(bucket, rutas):
     ruta_limpia = 'datos_limpios'
@@ -174,16 +129,6 @@ def procesar_archivos(bucket, rutas):
                 continue
             
             df = transformar_ingesta(data)
-            faltantes(df)
-            df = elimina_faltantes_latitud_longitud(df, ['latitude', 'longitude'])
-            
-            for columna in ['license_', 'zip', 'state', 'facility_type', 'risk']:
-                df = imputar_faltantes(df, columna, df[columna].mode()[0])
-                
-            df = transformar_enteros(df, ['inspection_id'])
-            df = transformar_flotantes(df, ['latitude', 'longitude'])
-            df = transformar_fechas(df, ['inspection_date'])
-            
             guardar_datos_s3(bucket, ruta_limpia, df, etag)
             logging.info(f"Limpieza realizada y guardada para el archivo con ETag {etag}")
 

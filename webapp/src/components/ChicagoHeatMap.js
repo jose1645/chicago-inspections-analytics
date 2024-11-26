@@ -1,105 +1,117 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import * as d3 from 'd3';
 import * as topojson from 'topojson-client';
-import '../styles/ChicagoMap.css';
+import '../styles/HeatMap.css';
 
-const ChicagoHeatMap = ({ topoData, backendData }) => {
-    const mapRef = useRef(null);
+const HeatMap = () => {
+    const [topoData, setTopoData] = useState(null); // Almacena el TopoJSON
+    const [inspectionLocations, setInspectionLocations] = useState([]); // Ubicaciones de inspecciones
+    const [currentPage, setCurrentPage] = useState(1); // Página actual
+    const [totalPages, setTotalPages] = useState(0); // Total de páginas
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        if (!topoData || !backendData) {
-            console.error("TopoJSON o datos del backend no cargados.");
-            return;
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+
+                // Cargar datos paginados del backend
+                const response = await axios.get(`/api/heatmap?page=${currentPage}`);
+                const data = response.data;
+
+                // Actualizar datos de paginación
+                setInspectionLocations(data.results.inspection_locations);
+                setTotalPages(Math.ceil(data.count / data.results.length));
+
+                // Cargar el archivo TopoJSON si no está cargado
+                if (!topoData) {
+                    const topoResponse = await d3.json('/utils/chicago.json');
+                    setTopoData(topoResponse);
+                }
+            } catch (err) {
+                setError('Error al obtener los datos del servidor.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [currentPage]); // Cambia los datos al cambiar de página
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
         }
+    };
 
-        // Extraer las ubicaciones de inspección del backend
-        const inspectionLocations = backendData.inspection_locations;
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
 
-        // Configuración del mapa
-        const width = 800;
-        const height = 600;
-
-        const svg = d3.select(mapRef.current)
-            .attr('width', width)
-            .attr('height', height);
-
-        svg.selectAll("*").remove(); // Limpia cualquier render anterior
-
-        const projection = d3.geoMercator()
-            .center([-87.6298, 41.8781]) // Centra en Chicago
-            .scale(50000)
-            .translate([width / 2, height / 2]);
-
-        const path = d3.geoPath().projection(projection);
-
-        const zipcodes = topojson.feature(topoData, topoData.objects.zipcodes);
-
-        // Dibujar ZIP codes
-        svg.append('g')
-            .selectAll('path')
-            .data(zipcodes.features)
-            .enter()
-            .append('path')
-            .attr('d', path)
-            .attr('fill', '#e8e8e8')
-            .attr('stroke', '#333')
-            .attr('stroke-width', 0.5);
-
-        // Preparar datos para el heatmap
-        const points = inspectionLocations.map(d => ({
-            x: projection([d.longitude, d.latitude])[0],
-            y: projection([d.longitude, d.latitude])[1],
-        }));
-
-        // Crear escala de colores para el heatmap
-        const colorScale = d3.scaleSequential(d3.interpolateYlOrRd)
-            .domain([0, d3.max(points, d => d.count || 1)]); // Ajustar dominio basado en la densidad
-
-        // Generar heatmap con densidad
-        const density = d3.contourDensity()
-            .x(d => d.x)
-            .y(d => d.y)
-            .size([width, height])
-            .bandwidth(30) // Controla la suavidad
-            (points);
-
-        // Dibujar el heatmap
-        svg.append('g')
-            .selectAll('path')
-            .data(density)
-            .enter()
-            .append('path')
-            .attr('d', d3.geoPath())
-            .attr('fill', d => colorScale(d.value))
-            .attr('stroke', "none")
-            .attr('opacity', 0.8);
-
-    }, [topoData, backendData]);
+    if (loading) return <div className="heatmap">Cargando datos...</div>;
+    if (error) return <div className="heatmap error">{error}</div>;
 
     return (
-        <div style={{ position: 'relative', width: '800px', height: '600px' }}>
-            {/* Contenedor del SVG */}
-            <svg ref={mapRef} className="chicago-map"></svg>
+        <div className="heatmap">
+            <h2>Mapa de Calor de Inspecciones en Chicago</h2>
+            <div id="map-container">
+                {topoData && (
+                    <svg id="heatmap-svg" width={800} height={600}>
+                        {/* Renderizar mapa base */}
+                        {topojson.feature(topoData, topoData.objects.zipcodes).features.map((feature, i) => (
+                            <path
+                                key={i}
+                                d={d3.geoPath()(feature)}
+                                fill="#e8e8e8"
+                                stroke="#333"
+                                strokeWidth={0.5}
+                            />
+                        ))}
 
-            {/* Leyenda del Heatmap */}
-            <div
-                style={{
-                    position: 'absolute',
-                    bottom: '10px',
-                    left: '10px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                    padding: '10px',
-                    borderRadius: '5px',
-                    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
-                    fontSize: '14px',
-                }}
-            >
-                <div><span style={{ color: '#ffffcc', marginRight: '10px' }}>●</span> Baja Densidad</div>
-                <div><span style={{ color: '#ffeda0', marginRight: '10px' }}>●</span> Media Densidad</div>
-                <div><span style={{ color: '#f03b20', marginRight: '10px' }}>●</span> Alta Densidad</div>
+                        {/* Renderizar puntos de inspección */}
+                        {inspectionLocations.map((location, i) => {
+                            const [x, y] = d3.geoMercator()
+                                .center([-87.6298, 41.8781])
+                                .scale(50000)
+                                .translate([400, 300])([location.longitude, location.latitude]);
+
+                            return (
+                                <circle
+                                    key={i}
+                                    cx={x}
+                                    cy={y}
+                                    r={5}
+                                    fill={location.results === "Pass" ? "green" : location.results === "Fail" ? "red" : "orange"}
+                                    opacity={0.8}
+                                >
+                                    <title>
+                                        {location.facility_name} ({location.results}) - {location.inspection_date}
+                                    </title>
+                                </circle>
+                            );
+                        })}
+                    </svg>
+                )}
+            </div>
+
+            {/* Controles de paginación */}
+            <div className="pagination">
+                <button onClick={handlePrevPage} disabled={currentPage === 1}>
+                    Página Anterior
+                </button>
+                <span>
+                    Página {currentPage} de {totalPages}
+                </span>
+                <button onClick={handleNextPage} disabled={currentPage === totalPages}>
+                    Página Siguiente
+                </button>
             </div>
         </div>
     );
 };
 
-export default ChicagoHeatMap;
+export default HeatMap;
