@@ -97,7 +97,7 @@ class HeatMap(APIView):
 
             # Lista de ubicaciones de inspección
             inspection_locations = data_from_s3[[
-                'facility_name', 'address', 'latitude', 'longitude',
+                'facility_type', 'address', 'latitude', 'longitude',
                 'inspection_date', 'results'
             ]].to_dict(orient='records')
 

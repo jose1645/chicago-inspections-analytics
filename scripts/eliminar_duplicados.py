@@ -1,12 +1,22 @@
 import boto3
-import logging
+import os
 from collections import defaultdict
 
-s3 = boto3.client('s3')
+# Obtener credenciales de AWS desde las variables de entorno
+aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
+aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 
-def eliminar_duplicados_por_etag(bucket, directorio):
+# Inicializar cliente de S3 con credenciales explícitas
+s3 = boto3.client(
+    's3',
+    aws_access_key_id=aws_access_key_id,
+    aws_secret_access_key=aws_secret_access_key
+)
+
+def eliminar_duplicados_por_nombre_etag(bucket, directorio):
     """
-    Identifica y elimina duplicados basados en el `etag` en un directorio de S3.
+    Mantiene solo un archivo único por ETag (extraído del nombre del archivo)
+    en un directorio de S3, eliminando cualquier archivo duplicado.
 
     Args:
         bucket (str): Nombre del bucket de S3.
@@ -20,46 +30,47 @@ def eliminar_duplicados_por_etag(bucket, directorio):
         response = s3.list_objects_v2(Bucket=bucket, Prefix=directorio)
 
         if 'Contents' not in response:
-            logging.info(f"No se encontraron objetos en el directorio {directorio}.")
+            print(f"No se encontraron objetos en el directorio {directorio}.")
             return
 
-        # Agrupar objetos por etag
+        print(f"Objetos encontrados en el directorio {directorio}: {len(response['Contents'])}")
+
+        # Agrupar archivos por el ETag extraído del nombre del archivo
         etag_to_keys = defaultdict(list)
         for obj in response['Contents']:
-            etag_to_keys[obj['ETag']].append(obj['Key'])
+            key = obj['Key']
+            # Extraer el ETag del nombre del archivo
+            if key.endswith(".pkl"):
+                etag = key.split('_')[-1].replace('.pkl', '')
+                etag_to_keys[etag].append(key)
 
-        # Identificar duplicados (más de un archivo con el mismo etag)
-        duplicados = {etag: keys for etag, keys in etag_to_keys.items() if len(keys) > 1}
+        # Procesar duplicados y eliminar todos excepto uno por ETag
+        for etag, keys in etag_to_keys.items():
+            if len(keys) > 1:
+                # Mantener el primer archivo y eliminar el resto
+                archivos_a_eliminar = [{"Key": key} for key in keys[1:]]
+                
+                eliminar_response = s3.delete_objects(
+                    Bucket=bucket,
+                    Delete={"Objects": archivos_a_eliminar}
+                )
 
-        if not duplicados:
-            logging.info(f"No se encontraron duplicados en el directorio {directorio}.")
-            return
-
-        # Eliminar todos los duplicados excepto uno por etag
-        for etag, keys in duplicados.items():
-            # Mantener el primer archivo y eliminar los demás
-            archivos_a_eliminar = [{"Key": key} for key in keys[1:]]  # Todos excepto el primero
-
-            # Eliminar los archivos duplicados
-            eliminar_response = s3.delete_objects(
-                Bucket=bucket,
-                Delete={"Objects": archivos_a_eliminar}
-            )
-
-            eliminados = eliminar_response.get("Deleted", [])
-            logging.info(f"Eliminados {len(eliminados)} duplicados para el etag {etag}.")
-            
-            errores = eliminar_response.get("Errors", [])
-            if errores:
-                logging.warning(f"Errores al eliminar duplicados: {errores}")
+                # Mostrar los archivos eliminados
+                eliminados = eliminar_response.get("Deleted", [])
+                print(f"Eliminados {len(eliminados)} archivos con el ETag (nombre) {etag}.")
+                
+                # Mostrar errores si los hay
+                errores = eliminar_response.get("Errors", [])
+                if errores:
+                    print(f"Errores al eliminar archivos con el ETag (nombre) {etag}: {errores}")
+            else:
+                print(f"El archivo con ETag (nombre) {etag} es único y no se elimina.")
 
     except Exception as e:
-        logging.error(f"Error al eliminar duplicados: {e}")
+        print(f"Error al procesar duplicados: {e}")
 
-
-
+# Llamar la función principal
 if __name__ == "__main__":
-
     bucket_name = "chicago-inspections-analytics"
-    directorio = "datos_limpios/"
-    eliminar_duplicados_por_etag(bucket_name,directorio)
+    ruta_directorio = "datos_limpios/datos_limpios/"
+    eliminar_duplicados_por_nombre_etag(bucket_name, ruta_directorio)
