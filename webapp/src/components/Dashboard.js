@@ -16,21 +16,26 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
+                setLoading(true);
+
                 // Cargar KPIs desde el backend
-                const response = await axios.get('/api/kpis');
-                setKpis(response.data);
+                const kpisResponse = await axios.get('/api/kpis');
+                setKpis(kpisResponse.data);
 
                 // Cargar el archivo TopoJSON
                 const topoResponse = await d3.json('/utils/chicago.json');
                 setTopoData(topoResponse);
 
                 // Extraer ubicaciones de inspección
-                setInspectionLocations(response.data.inspection_locations);
+                if (kpisResponse.data?.inspection_locations) {
+                    setInspectionLocations(kpisResponse.data.inspection_locations);
+                }
 
                 // Cargar datos para el mapa de calor
                 const heatmapResponse = await axios.get('/api/heatmap');
                 setHeatmapData(heatmapResponse.data.inspection_locations);
             } catch (err) {
+                console.error('Error al obtener los datos:', err);
                 setError('Error al obtener los datos del servidor o el mapa.');
             } finally {
                 setLoading(false);
@@ -48,50 +53,58 @@ const Dashboard = () => {
             <h2>Dashboard de KPIs</h2>
             <div className="dashboard-charts">
                 {/* KPIs */}
-                <div className="chart">
-                    <h3>Total de Inspecciones</h3>
-                    <p>{kpis.total_inspections}</p>
-                </div>
-                <div className="chart">
-                    <h3>Inspecciones Aprobadas</h3>
-                    <p>{kpis.passed_inspections}</p>
-                </div>
-                <div className="chart">
-                    <h3>Inspecciones Rechazadas</h3>
-                    <p>{kpis.failed_inspections}</p>
-                </div>
-                <div className="chart">
-                    <h3>Inspecciones por Mes</h3>
-                    <ul>
-                        {Object.entries(kpis.inspections_by_month).map(([month, count]) => (
-                            <li key={month}>
-                                Mes {month}: {count} inspecciones
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                <div className="chart">
-                    <h3>Distribución de Riesgo</h3>
-                    <ul>
-                        {Object.entries(kpis.risk_distribution).map(([risk, count]) => (
-                            <li key={risk}>
-                                {risk}: {count} inspecciones
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+                {kpis && (
+                    <>
+                        <div className="chart">
+                            <h3>Total de Inspecciones</h3>
+                            <p>{kpis.total_inspections}</p>
+                        </div>
+                        <div className="chart">
+                            <h3>Inspecciones Aprobadas</h3>
+                            <p>{kpis.passed_inspections}</p>
+                        </div>
+                        <div className="chart">
+                            <h3>Inspecciones Rechazadas</h3>
+                            <p>{kpis.failed_inspections}</p>
+                        </div>
+                        <div className="chart">
+                            <h3>Inspecciones por Mes</h3>
+                            <ul>
+                                {Object.entries(kpis.inspections_by_month).map(([month, count]) => (
+                                    <li key={month}>
+                                        Mes {month}: {count} inspecciones
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                        <div className="chart">
+                            <h3>Distribución de Riesgo</h3>
+                            <ul>
+                                {Object.entries(kpis.risk_distribution).map(([risk, count]) => (
+                                    <li key={risk}>
+                                        {risk}: {count} inspecciones
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </>
+                )}
 
                 {/* Mapa con puntos de inspección */}
-                <div className="chart">
-                    <h3>Mapa de Inspecciones en Chicago</h3>
-                    <ChicagoMap topoData={topoData} inspectionLocations={inspectionLocations} />
-                </div>
+                {topoData && inspectionLocations.length > 0 && (
+                    <div className="chart">
+                        <h3>Mapa de Inspecciones en Chicago</h3>
+                        <ChicagoMap topoData={topoData} inspectionLocations={inspectionLocations} />
+                    </div>
+                )}
 
                 {/* Mapa de calor */}
-                <div className="chart">
-                    <h3>Mapa de Calor de Inspecciones</h3>
-                    <ChicagoHeatMap topoData={topoData} backendData={{ inspection_locations: heatmapData }} />
-                </div>
+                {topoData && heatmapData.length > 0 && (
+                    <div className="chart">
+                        <h3>Mapa de Calor de Inspecciones</h3>
+                        <ChicagoHeatMap topoData={topoData} backendData={{ inspection_locations: heatmapData }} />
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -18,14 +18,17 @@ const ChoroplethMap = () => {
 
                 // Cargar el mapa base
                 const topoResponse = await d3.json('/utils/chicago.json');
+                console.log('Datos del mapa base cargados:', topoResponse);
                 setTopoData(topoResponse);
 
                 // Cargar datos agregados desde el backend
                 const response = await axios.get('/api/heatmap'); // Endpoint del backend con datos agregados por ZIP
+                console.log('Datos del backend cargados:', response.data);
                 setInspectionData(response.data);
 
                 setLoading(false);
             } catch (err) {
+                console.error('Error al obtener los datos del servidor:', err);
                 setError('Error al obtener los datos del servidor.');
                 setLoading(false);
             }
@@ -65,6 +68,7 @@ const ChoroplethMap = () => {
 
         // Escala de colores para el choropleth
         const maxInspections = d3.max(inspectionValues, d => (typeof d?.total_inspections === 'number' ? d.total_inspections : 0));
+        console.log('Máximo de inspecciones:', maxInspections);
         const colorScale = d3.scaleSequential(d3.interpolateBlues).domain([0, maxInspections || 1]);
 
         // Extraer ZIP codes del TopoJSON
@@ -77,9 +81,14 @@ const ChoroplethMap = () => {
             .append('path')
             .attr('d', path)
             .attr('fill', d => {
+                if (!d || !d.properties) {
+                    console.error('Feature inválida o sin propiedades:', d);
+                    return '#ccc'; // Color de relleno por defecto si los datos son inválidos
+                }
                 const zip = d.properties.ZIP;
                 const data = inspectionData[zip];
                 const totalInspections = typeof data?.total_inspections === 'number' ? data.total_inspections : 0;
+                console.log(`ZIP: ${zip}, Inspecciones totales: ${totalInspections}`);
                 return colorScale(totalInspections);
             })
             .attr('stroke', '#333')
@@ -99,6 +108,11 @@ const ChoroplethMap = () => {
 
         // Tooltip
         const tooltip = d3.select('#tooltip');
+        if (tooltip.empty()) {
+            console.error('El elemento tooltip no existe en el DOM.');
+            return;
+        }
+
         const showTooltip = (x, y, content) => {
             tooltip.style('left', `${x + 10}px`)
                 .style('top', `${y + 10}px`)
