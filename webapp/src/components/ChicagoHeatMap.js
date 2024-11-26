@@ -36,7 +36,6 @@ const ChoroplethMap = () => {
 
     useEffect(() => {
         if (topoData && inspectionData) {
-            // Renderizar el choropleth
             renderChoropleth();
         }
     }, [topoData, inspectionData]);
@@ -65,8 +64,8 @@ const ChoroplethMap = () => {
         }
 
         // Escala de colores para el choropleth
-        const colorScale = d3.scaleSequential(d3.interpolateBlues)
-            .domain([0, d3.max(inspectionValues, d => (typeof d?.total_inspections === 'number' ? d.total_inspections : 0))]);
+        const maxInspections = d3.max(inspectionValues, d => (typeof d?.total_inspections === 'number' ? d.total_inspections : 0));
+        const colorScale = d3.scaleSequential(d3.interpolateBlues).domain([0, maxInspections || 1]);
 
         // Extraer ZIP codes del TopoJSON
         const zipcodes = topojson.feature(topoData, topoData.objects.zipcodes);
@@ -102,7 +101,7 @@ const ChoroplethMap = () => {
         const tooltip = d3.select('#tooltip');
         const showTooltip = (x, y, content) => {
             tooltip.style('left', `${x + 10}px`)
-                .style('top', `${y}px`)
+                .style('top', `${y + 10}px`)
                 .style('display', 'block')
                 .html(content);
         };
