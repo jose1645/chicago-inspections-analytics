@@ -57,9 +57,16 @@ const ChoroplethMap = () => {
 
         const path = d3.geoPath().projection(projection);
 
+        // Validar datos de inspección
+        const inspectionValues = Object.values(inspectionData || {});
+        if (inspectionValues.length === 0) {
+            console.error('No hay datos de inspección disponibles.');
+            return;
+        }
+
         // Escala de colores para el choropleth
         const colorScale = d3.scaleSequential(d3.interpolateBlues)
-            .domain([0, d3.max(Object.values(inspectionData), d => d.total_inspections)]);
+            .domain([0, d3.max(inspectionValues, d => (typeof d?.total_inspections === 'number' ? d.total_inspections : 0))]);
 
         // Extraer ZIP codes del TopoJSON
         const zipcodes = topojson.feature(topoData, topoData.objects.zipcodes);
@@ -73,7 +80,8 @@ const ChoroplethMap = () => {
             .attr('fill', d => {
                 const zip = d.properties.ZIP;
                 const data = inspectionData[zip];
-                return data ? colorScale(data.total_inspections) : '#e8e8e8';
+                const totalInspections = typeof data?.total_inspections === 'number' ? data.total_inspections : 0;
+                return colorScale(totalInspections);
             })
             .attr('stroke', '#333')
             .attr('stroke-width', 0.5)
