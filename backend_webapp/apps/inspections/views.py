@@ -58,7 +58,7 @@ class CustomPagination(PageNumberPagination):
     """
     Clase personalizada para paginar resultados.
     """
-    page_size = 500  # Número de registros por página
+    page_size = 5000  # Número de registros por página
     page_size_query_param = 'page_size'  # Permite al cliente modificar el tamaño
     max_page_size = 1000  # Tamaño máximo permitido
 
