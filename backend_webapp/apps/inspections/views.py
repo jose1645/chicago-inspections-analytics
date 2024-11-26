@@ -54,93 +54,66 @@ class KPIs(APIView):
 
         return Response(kpis)
 
-class CustomPagination(PageNumberPagination):
-    """
-    Clase personalizada para paginar resultados.
-    """
-    page_size = 15000  # Número de registros por página
-    page_size_query_param = 'page_size'  # Permite al cliente modificar el tamaño
-    max_page_size = 1000  # Tamaño máximo permitido
 
-class HeatMap(APIView):
-    """
-    Vista para devolver los KPIs y las ubicaciones de inspecciones con paginación.
-    """
-    def get(self, request, *args, **kwargs):
-        s3 = boto3.client(
-            's3',
-            aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-            aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
-        )
 
-        # Configuración del bucket y prefijo del directorio
-        bucket_name = os.getenv("S3_BUCKET_NAME")
-        directory_prefix = 'datos_limpios/datos_limpios/'
+    class HeatMap(APIView):
+   
+        def get(self, request, *args, **kwargs):
+            s3 = boto3.client(
+                's3',
+                aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+                aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+            )
 
-        try:
-            # Listar todos los archivos .pkl en el directorio
-            response = s3.list_objects_v2(Bucket=bucket_name, Prefix=directory_prefix)
-            if 'Contents' not in response:
-                raise FileNotFoundError(f"No se encontraron archivos en el directorio {directory_prefix}")
+            # Configuración del bucket y prefijo del directorio
+            bucket_name = os.getenv("S3_BUCKET_NAME")
+            directory_prefix = 'datos_limpios/datos_limpios/'
 
-            # Filtrar los archivos .pkl
-            pkl_files = [obj['Key'] for obj in response['Contents'] if obj['Key'].endswith('.pkl')]
-            if not pkl_files:
-                raise FileNotFoundError(f"No se encontraron archivos .pkl en el directorio {directory_prefix}")
+            try:
+                # Listar todos los archivos .pkl en el directorio
+                response = s3.list_objects_v2(Bucket=bucket_name, Prefix=directory_prefix)
+                if 'Contents' not in response:
+                    raise FileNotFoundError(f"No se encontraron archivos en el directorio {directory_prefix}")
 
-            # Cargar y concatenar los archivos .pkl
-            dataframes = []
-            for file_key in pkl_files:
-                # Función para cargar archivo desde S3 (puedes reemplazar con tu lógica)
-                data = load_file_from_s3(bucket_name, file_key)
-                if not isinstance(data, pd.DataFrame):
-                    raise ValueError(f"El archivo {file_key} no contiene un DataFrame válido.")
-                dataframes.append(data)
+                # Filtrar los archivos .pkl
+                pkl_files = [obj['Key'] for obj in response['Contents'] if obj['Key'].endswith('.pkl')]
+                if not pkl_files:
+                    raise FileNotFoundError(f"No se encontraron archivos .pkl en el directorio {directory_prefix}")
 
-            # Concatenar todos los DataFrames
-            data_from_s3 = pd.concat(dataframes, ignore_index=True)
+                # Cargar y concatenar los archivos .pkl
+                dataframes = []
+                for file_key in pkl_files:
+                    # Función para cargar archivo desde S3 (puedes reemplazar con tu lógica)
+                    data = load_file_from_s3(bucket_name, file_key)
+                    if not isinstance(data, pd.DataFrame):
+                        raise ValueError(f"El archivo {file_key} no contiene un DataFrame válido.")
+                    dataframes.append(data)
 
-            # Convertir columna de fechas a formato datetime si no lo está
-            if not pd.api.types.is_datetime64_any_dtype(data_from_s3['inspection_date']):
-                data_from_s3['inspection_date'] = pd.to_datetime(data_from_s3['inspection_date'])
+                # Concatenar todos los DataFrames
+                data_from_s3 = pd.concat(dataframes, ignore_index=True)
 
-            # KPIs básicos
-            total_inspections = len(data_from_s3)
-            passed_inspections = len(data_from_s3[data_from_s3['results'] == 'Pass'])
-            failed_inspections = len(data_from_s3[data_from_s3['results'] == 'Fail'])
+                # Convertir columna de fechas a formato datetime si no lo está
+                if not pd.api.types.is_datetime64_any_dtype(data_from_s3['inspection_date']):
+                    data_from_s3['inspection_date'] = pd.to_datetime(data_from_s3['inspection_date'])
 
-            # Inspecciones por mes
-            inspections_by_month = data_from_s3.groupby(data_from_s3['inspection_date'].dt.strftime('%Y-%m')).size()
+                # Agrupar por ZIP y calcular KPIs
+                grouped_data = data_from_s3.groupby('zip').apply(lambda group: {
+                    "total_inspections": len(group),
+                    "passed_inspections": len(group[group['results'] == 'Pass']),
+                    "failed_inspections": len(group[group['results'] == 'Fail'])
+                })
 
-            # Distribución de riesgo
-            risk_distribution = data_from_s3['risk'].value_counts()
+                # Convertir a un diccionario para el JSON de salida
+                zip_kpis = grouped_data.to_dict()
 
-            # Lista de ubicaciones de inspección
-            inspection_locations = data_from_s3[[
-                'facility_type', 'address', 'latitude', 'longitude',
-                'inspection_date', 'results'
-            ]]
+            except FileNotFoundError as fnf_error:
+                return Response({"error": str(fnf_error)}, status=404)
+            except ValueError as ve:
+                return Response({"error": f"Error de validación: {str(ve)}"}, status=400)
+            except Exception as e:
+                return Response({"error": f"Error al calcular KPIs: {str(e)}"}, status=500)
 
-            # Configuración de paginación
-            paginator = CustomPagination()
-            paginated_locations = paginator.paginate_queryset(inspection_locations.to_dict(orient='records'), request)
+            # Retornar KPIs agrupados por ZIP
+            return Response(zip_kpis)
 
-            # Construcción del diccionario de KPIs
-            kpis = {
-                'total_inspections': total_inspections,
-                'passed_inspections': passed_inspections,
-                'failed_inspections': failed_inspections,
-                'inspections_by_month': inspections_by_month.to_dict(),
-                'risk_distribution': risk_distribution.to_dict(),
-                'inspection_locations': paginated_locations,
-            }
 
-        except FileNotFoundError as fnf_error:
-            return Response({"error": str(fnf_error)}, status=404)
-        except ValueError as ve:
-            return Response({"error": f"Error de validación: {str(ve)}"}, status=400)
-        except Exception as e:
-            return Response({"error": f"Error al calcular KPIs: {str(e)}"}, status=500)
-
-        # Retornar KPIs con paginación
-        return paginator.get_paginated_response(kpis)

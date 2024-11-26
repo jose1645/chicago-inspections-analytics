@@ -1,77 +1,16 @@
-/* Estilos generales */
-.heatmap {
-  font-family: Arial, sans-serif;
-  color: #333;
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Títulos */
-.heatmap h2 {
-  font-size: 24px;
-  margin-bottom: 20px;
-}
-
-/* Indicadores de progreso */
-.progress-bar {
-  width: 100%;
-  background-color: #e0e0e0;
-  border-radius: 5px;
-  overflow: hidden;
-  margin: 10px 0;
-  height: 20px;
-}
-
-.progress-bar .progress {
-  height: 100%;
-  background-color: #4caf50;
-  color: white;
-  text-align: center;
-  line-height: 20px;
-  font-size: 12px;
-  border-radius: 5px;
-}
-
-/* Contenedor del mapa */
-#map-container {
+.choropleth-map {
   position: relative;
   width: 800px;
   height: 600px;
-  margin: 0 auto;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background-color: #eef6fc;
 }
 
-/* SVG del mapa */
-#heatmap-svg {
-  width: 100%;
-  height: 100%;
-}
-
-/* Estilo de los puntos en el mapa */
-circle {
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-circle:hover {
-  transform: scale(1.5);
-  stroke: #333;
-  stroke-width: 1.5;
-}
-
-/* Mensajes de carga */
-.heatmap p {
-  margin: 5px 0;
-  font-size: 16px;
-}
-
-/* Indicador de error */
-.heatmap.error {
-  color: red;
-  font-size: 18px;
-  text-align: center;
+.tooltip {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+  font-size: 12px;
+  pointer-events: none;
+  display: none;
 }
