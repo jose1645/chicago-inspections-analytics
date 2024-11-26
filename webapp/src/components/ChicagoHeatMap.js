@@ -5,30 +5,48 @@ import * as topojson from 'topojson-client';
 import '../styles/ChicagoHeatMap.css';
 
 const HeatMap = () => {
-    const [topoData, setTopoData] = useState(null); // Almacena el TopoJSON
-    const [inspectionLocations, setInspectionLocations] = useState([]); // Ubicaciones de inspecciones
-    const [currentPage, setCurrentPage] = useState(1); // Página actual
-    const [totalPages, setTotalPages] = useState(0); // Total de páginas
+    const [topoData, setTopoData] = useState(null); // Datos del mapa base
+    const [inspectionLocations, setInspectionLocations] = useState([]); // Acumulación de ubicaciones de inspecciones
     const [loading, setLoading] = useState(true);
+    const [progress, setProgress] = useState(0); // Progreso global de carga
+    const [currentYearMonth, setCurrentYearMonth] = useState(''); // Año/mes del lote más reciente
+    const [totalLoaded, setTotalLoaded] = useState(0); // Cantidad de datos acumulados
     const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
+            setLoading(true);
+
             try {
-                setLoading(true);
+                const topoResponse = await d3.json('/utils/chicago.json');
+                setTopoData(topoResponse);
 
-                // Cargar datos paginados del backend
-                const response = await axios.get(`/api/heatmap?page=${currentPage}`);
-                const data = response.data;
+                // Lógica para cargar y acumular datos del backend
+                let currentPage = 1;
+                let moreData = true;
 
-                // Actualizar datos de paginación
-                setInspectionLocations(data.results.inspection_locations);
-                setTotalPages(Math.ceil(data.count / data.results.length));
+                while (moreData) {
+                    const response = await axios.get(`/api/heatmap?page=${currentPage}`);
+                    const data = response.data;
 
-                // Cargar el archivo TopoJSON si no está cargado
-                if (!topoData) {
-                    const topoResponse = await d3.json('/utils/chicago.json');
-                    setTopoData(topoResponse);
+                    // Actualizar ubicaciones acumuladas
+                    setInspectionLocations((prev) => [...prev, ...data.results.inspection_locations]);
+
+                    // Extraer el año y mes del lote más reciente
+                    const latestInspection = data.results.inspection_locations[data.results.inspection_locations.length - 1];
+                    if (latestInspection && latestInspection.inspection_date) {
+                        const date = new Date(latestInspection.inspection_date);
+                        const yearMonth = date.toLocaleString('default', { year: 'numeric', month: 'long' });
+                        setCurrentYearMonth(yearMonth);
+                    }
+
+                    // Actualizar progreso
+                    setTotalLoaded((prev) => prev + data.results.inspection_locations.length);
+                    setProgress((prev) => (totalLoaded / data.count) * 100);
+
+                    // Verificar si hay más datos
+                    moreData = !!data.next; // Si `data.next` es nulo, no hay más datos
+                    currentPage += 1;
                 }
             } catch (err) {
                 setError('Error al obtener los datos del servidor.');
@@ -38,26 +56,30 @@ const HeatMap = () => {
         };
 
         fetchData();
-    }, [currentPage]); // Cambia los datos al cambiar de página
+    }, []);
 
-    const handleNextPage = () => {
-        if (currentPage < totalPages) {
-            setCurrentPage(currentPage + 1);
-        }
-    };
+    if (loading) {
+        return (
+            <div className="heatmap">
+                <h2>Cargando...</h2>
+                <div className="progress-bar">
+                    <div className="progress" style={{ width: `${progress}%` }}>
+                        {Math.round(progress)}%
+                    </div>
+                </div>
+                <p>Datos cargados: {totalLoaded}</p>
+                <p>Cargando datos para: {currentYearMonth || 'Calculando...'}</p>
+            </div>
+        );
+    }
 
-    const handlePrevPage = () => {
-        if (currentPage > 1) {
-            setCurrentPage(currentPage - 1);
-        }
-    };
-
-    if (loading) return <div className="heatmap">Cargando datos...</div>;
     if (error) return <div className="heatmap error">{error}</div>;
 
     return (
         <div className="heatmap">
             <h2>Mapa de Calor de Inspecciones en Chicago</h2>
+            <p>Total de inspecciones cargadas: {inspectionLocations.length}</p>
+            <p>Último lote de datos cargados: {currentYearMonth}</p>
             <div id="map-container">
                 {topoData && (
                     <svg id="heatmap-svg" width={800} height={600}>
@@ -72,7 +94,7 @@ const HeatMap = () => {
                             />
                         ))}
 
-                        {/* Renderizar puntos de inspección */}
+                        {/* Renderizar puntos acumulados */}
                         {inspectionLocations.map((location, i) => {
                             const [x, y] = d3.geoMercator()
                                 .center([-87.6298, 41.8781])
@@ -96,19 +118,6 @@ const HeatMap = () => {
                         })}
                     </svg>
                 )}
-            </div>
-
-            {/* Controles de paginación */}
-            <div className="pagination">
-                <button onClick={handlePrevPage} disabled={currentPage === 1}>
-                    Página Anterior
-                </button>
-                <span>
-                    Página {currentPage} de {totalPages}
-                </span>
-                <button onClick={handleNextPage} disabled={currentPage === totalPages}>
-                    Página Siguiente
-                </button>
             </div>
         </div>
     );
