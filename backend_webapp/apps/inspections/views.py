@@ -56,7 +56,7 @@ class KPIs(APIView):
 
 
 
-    class HeatMap(APIView):
+class HeatMap(APIView):
    
         def get(self, request, *args, **kwargs):
             s3 = boto3.client(
