@@ -10,11 +10,26 @@ function App() {
         <div className="App">
             <header className="app-header">
                 <h1>Proyecto de Análisis y Predicción de Inspecciones Sanitarias</h1>
-                <nav className="app-nav">
-                    <button onClick={() => document.getElementById('description').scrollIntoView({ behavior: 'smooth' })}>Descripción</button>
-                    <button onClick={() => document.getElementById('dashboard').scrollIntoView({ behavior: 'smooth' })}>Dashboard</button>
-                    <button onClick={() => document.getElementById('mlmodels').scrollIntoView({ behavior: 'smooth' })}>Modelos de ML</button>
-                </nav>
+
+
+                <nav class="navigation">
+    <button class="button" onClick="document.getElementById('description').scrollIntoView({ behavior: 'smooth' })" data-text="Descripción">
+        <span class="actual-text">&nbsp;Descripción&nbsp;</span>
+        <span aria-hidden="true" class="hover-text">&nbsp;Descripción&nbsp;</span>
+    </button>
+    <button class="button" onClick="document.getElementById('dashboard').scrollIntoView({ behavior: 'smooth' })" data-text="Dashboard">
+        <span class="actual-text">&nbsp;Dashboard&nbsp;</span>
+        <span aria-hidden="true" class="hover-text">&nbsp;Dashboard&nbsp;</span>
+    </button>
+    <button class="button" onClick="document.getElementById('mlmodels').scrollIntoView({ behavior: 'smooth' })" data-text="Modelos de ML">
+        <span class="actual-text">&nbsp;Modelos de ML&nbsp;</span>
+        <span aria-hidden="true" class="hover-text">&nbsp;Modelos de ML&nbsp;</span>
+    </button>
+</nav>
+
+       
+
+      
             </header>
             <main className="app-main">
                 <section id="description"><ProjectDescription /></section>
