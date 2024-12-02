@@ -9,8 +9,8 @@ function App() {
         <div className="App">
             {/* Header */}
             <header className="app-header">
+             <h1>Proyecto de Análisis y Predicción de Inspecciones Sanitarias</h1>
                 <div className="header-content">
-                    <h1>Proyecto de Análisis y Predicción de Inspecciones Sanitarias</h1>
                     {/* Navegación */}
                     <nav className="app-nav">
                         <button
