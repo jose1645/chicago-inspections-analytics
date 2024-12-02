@@ -1,5 +1,4 @@
-/* src/styles/App.css */
-
+/* Header general */
 .app-header {
     background-color: #282c34;
     padding: 20px;
@@ -7,16 +6,17 @@
     text-align: center;
 }
 
+/* Contenedor de navegación */
 .app-nav {
     display: flex;
-    justify-content: center; /* Centra los botones en la barra de navegación */
-    align-items: center;
-    gap: 20px; /* Espacio entre botones */
+    justify-content: center;
+    gap: 20px;
     padding: 10px;
-    background-color: #20232a; /* Fondo del nav */
-    border-radius: 8px; /* Esquinas redondeadas */
+    background-color: #20232a;
+    border-radius: 8px;
 }
 
+/* Botones estilizados */
 .app-nav .button {
     margin: 0;
     height: auto;
@@ -27,7 +27,7 @@
     --border-right: 6px;
     --text-stroke-color: rgba(255, 255, 255, 0.6);
     --animation-color: #37FF8B;
-    --fs-size: 1.2em;
+    --fs-size: 1.5em;
     letter-spacing: 2px;
     text-decoration: none;
     font-size: var(--fs-size);
@@ -38,6 +38,7 @@
     -webkit-text-stroke: 1px var(--text-stroke-color);
 }
 
+/* Texto animado al pasar el mouse */
 .app-nav .button .hover-text {
     position: absolute;
     box-sizing: border-box;
@@ -50,15 +51,18 @@
     -webkit-text-stroke: 1px var(--animation-color);
 }
 
+/* Efecto hover */
 .app-nav .button:hover .hover-text {
     width: 100%;
-    filter: drop-shadow(0 0 10px var(--animation-color));
+    filter: drop-shadow(0 0 23px var(--animation-color));
 }
 
+/* Contenido principal */
 .app-main {
     padding: 20px;
 }
 
+/* Espaciado entre secciones */
 section {
     margin: 40px 0;
 }
