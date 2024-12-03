@@ -1,23 +1,25 @@
 import React from 'react';
-import MainCard from './MainCard';
 import SubCard from './SubCard';
 import '../styles/KPIContainer.css';
 
 const KPIContainer = ({ kpis }) => {
     return (
         <div className="kpi-container">
-            <MainCard title="KPIs" subtitle="Resumen General" />
-            <div className="sub-card-container">
-                {kpis.map((kpi, index) => (
-                    <SubCard
-                        key={index}
-                        icon={<svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" /></svg>}
-                        title={kpi.title}
-                        value={kpi.value}
-                        details={kpi.details}
-                    />
+            <SubCard title="Total de Inspecciones" value={kpis.total_inspections} />
+            <SubCard title="Inspecciones Aprobadas" value={kpis.passed_inspections} />
+            <SubCard title="Inspecciones Rechazadas" value={kpis.failed_inspections} />
+            <SubCard
+                title="Inspecciones por Mes"
+                details={Object.entries(kpis.inspections_by_month).map(([month, count]) => (
+                    <li key={month}>Mes {month}: {count} inspecciones</li>
                 ))}
-            </div>
+            />
+            <SubCard
+                title="Distribución de Riesgo"
+                details={Object.entries(kpis.risk_distribution).map(([risk, count]) => (
+                    <li key={risk}>{risk}: {count} inspecciones</li>
+                ))}
+            />
         </div>
     );
 };

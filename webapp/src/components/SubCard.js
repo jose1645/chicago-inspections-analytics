@@ -1,17 +1,16 @@
 import React from 'react';
 import '../styles/SubCard.css';
 
-const SubCard = ({ icon, title, value, details }) => {
+const SubCard = ({ title, value, details }) => {
     return (
         <div className="sub-card">
-            <div className="title">
-                <span>{icon}</span>
-                <p className="title-text">{title}</p>
-            </div>
-            <div className="data">
-                <p>{value}</p>
-                {details && <p className="details">{details}</p>}
-            </div>
+            <h3>{title}</h3>
+            {value !== undefined && <p className="value">{value}</p>}
+            {details && Array.isArray(details) && details.length > 0 ? (
+                <ul className="details">{details}</ul>
+            ) : (
+                details && <p className="no-data">{details}</p>
+            )}
         </div>
     );
 };
