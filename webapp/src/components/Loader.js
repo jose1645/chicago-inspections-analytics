@@ -1,7 +1,6 @@
 // src/components/Loader.js
 import React from 'react';
-import './Loader.css'; // Asegúrate de que el CSS esté en el mismo directorio o ajusta la ruta
-
+import Loader from '..styles/Loader.css';
 const Loader = () => (
     <div className="loader">
         <div className="circle">

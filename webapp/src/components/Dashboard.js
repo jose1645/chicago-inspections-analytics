@@ -4,7 +4,7 @@ import * as d3 from 'd3';
 import '../styles/Dashboard.css';
 import ChicagoMap from './ChicagoMap';
 import ChicagoHeatMap from './ChicagoHeatMap';
-import Loader from '..styles/Loader.css';
+import Loader from './Loader';
 
 const Dashboard = () => {
     const [kpis, setKpis] = useState(null);
@@ -51,7 +51,7 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard">
-            <h2>Dashboard de KPIs</h2>
+            <h2>Dashboard de KPIs mes corriente</h2>
             <div className="dashboard-charts">
                 {/* KPIs */}
                 {kpis && (
