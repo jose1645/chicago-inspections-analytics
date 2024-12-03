@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import * as d3 from 'd3';
-import '../styles/Dashboard.css';
-import ChicagoMap from './ChicagoMap';
-import ChicagoHeatMap from './ChicagoHeatMap';
-import Loader from './Loader';
+import Loader from './Loader'; // Componente para mostrar carga
+import KPIContainer from './KPIContainer'; // Contenedor de KPIs
+import ChicagoMap from './ChicagoMap'; // Mapa con puntos de inspección
+import ChicagoHeatMap from './ChicagoHeatMap'; // Mapa de calor
+import './Dashboard.css'; // Estilos específicos para el dashboard
 
 const Dashboard = () => {
     const [kpis, setKpis] = useState(null);
@@ -23,9 +23,9 @@ const Dashboard = () => {
                 const kpisResponse = await axios.get('/api/kpis');
                 setKpis(kpisResponse.data);
 
-                // Cargar el archivo TopoJSON
-                const topoResponse = await d3.json('/utils/chicago.json');
-                setTopoData(topoResponse);
+                // Cargar el archivo TopoJSON para el mapa
+                const topoResponse = await axios.get('/utils/chicago.json');
+                setTopoData(topoResponse.data);
 
                 // Extraer ubicaciones de inspección
                 if (kpisResponse.data?.inspection_locations) {
@@ -51,68 +51,26 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard">
-            <h2>Dashboard de KPIs mes corriente</h2>
-            <div className="dashboard-charts">
-                {/* KPIs */}
-                {kpis && (
-                    <>
-                        <div className="chart">
-                            <h3>Total de Inspecciones</h3>
-                            <p>{kpis.total_inspections}</p>
-                        </div>
-                        <div className="chart">
-                            <h3>Inspecciones Aprobadas</h3>
-                            <p>{kpis.passed_inspections}</p>
-                        </div>
-                        <div className="chart">
-                            <h3>Inspecciones Rechazadas</h3>
-                            <p>{kpis.failed_inspections}</p>
-                        </div>
-                        <div className="chart">
-                            <h3>Inspecciones por Mes</h3>
-                            <ul>
-                                {Object.entries(kpis.inspections_by_month).map(([month, count]) => (
-                                    <li key={month}>
-                                        Mes {month}: {count} inspecciones
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                        <div className="chart">
-                            <h3>Distribución de Riesgo</h3>
-                            <ul>
-                                {Object.entries(kpis.risk_distribution).map(([risk, count]) => (
-                                    <li key={risk}>
-                                        {risk}: {count} inspecciones
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    </>
+            <h2>Dashboard de KPIs - Mes Corriente</h2>
+
+            {/* Contenedor de KPIs */}
+            {kpis && <KPIContainer kpis={kpis} />}
+
+            {/* Mapas */}
+            <div className="dashboard-maps">
+                {Array.isArray(inspectionLocations) && inspectionLocations.length > 0 && (
+                    <div className="map-container">
+                        <h3>Mapa de Inspecciones en Chicago</h3>
+                        <ChicagoMap topoData={topoData} inspectionLocations={inspectionLocations} />
+                    </div>
                 )}
 
-<div className="dashboard-charts">
-    {/* Mapa con puntos de inspección */}
-    {Array.isArray(inspectionLocations) && inspectionLocations.length > 0 && (
-        <div className="chart">
-            <h3>Mapa de Inspecciones en Chicago</h3>
-            <ChicagoMap topoData={topoData} inspectionLocations={inspectionLocations} />
-        </div>
-    )}
-
-    {/* Mapa de calor */}
-    {Array.isArray(heatmapData) && heatmapData.length > 0 && (
-        <div className="chart">
-            <h3>Mapa de Calor de Inspecciones</h3>
-            <ChicagoHeatMap topoData={topoData} backendData={{ inspection_locations: heatmapData }} />
-        </div>
-    )}
-</div>
-
-
-
-
-
+                {Array.isArray(heatmapData) && heatmapData.length > 0 && (
+                    <div className="map-container">
+                        <h3>Mapa de Calor de Inspecciones</h3>
+                        <ChicagoHeatMap topoData={topoData} backendData={{ inspection_locations: heatmapData }} />
+                    </div>
+                )}
             </div>
         </div>
     );
