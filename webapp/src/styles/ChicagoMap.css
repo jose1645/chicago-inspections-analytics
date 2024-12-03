@@ -1,41 +1,77 @@
-/* Estilos para el contenedor SVG del mapa */
+/* Contenedor del mapa */
 .chicago-map {
-    display: block; /* Asegura que se comporte como un bloque */
-    margin: 20px auto; /* Centra el mapa horizontalmente con un margen superior */
-    border: 2px solid #ccc; /* Borde claro */
-    border-radius: 10px; /* Bordes redondeados */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Sombra más pronunciada */
-    background-color: #ffffff; /* Fondo blanco */
+    display: block;
+    margin: 20px auto;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background-color: #ffffff;
+    width: 100%; /* Asegura que ocupe todo el ancho disponible */
+    max-width: 1200px; /* Ancho máximo en pantallas grandes */
+    height: auto; /* Mantiene la proporción del SVG */
+}
+
+/* Asegura que el SVG se ajuste correctamente */
+.chicago-map svg {
+    width: 100%;
+    height: auto;
 }
 
 /* Animación para los puntos del mapa */
 .chicago-map circle {
-    transition: all 0.5s ease-out; /* Transición más lenta para los cambios */
-    opacity: 0.8; /* Puntos ligeramente visibles inicialmente */
+    transition: all 0.5s ease-out;
+    opacity: 0.8;
 }
 
 /* Efecto hover sobre los puntos */
 .chicago-map circle:hover {
-    fill: orange; /* Cambia el color al pasar el cursor */
-    cursor: pointer; /* Cambia el cursor a un puntero */
-    r: 12px; /* Aumenta el tamaño al pasar el cursor */
-    stroke: #333; /* Añade un borde oscuro al punto */
-    stroke-width: 1px; /* Ancho del borde */
+    fill: orange;
+    cursor: pointer;
+    r: 12px;
+    stroke: #333;
+    stroke-width: 1px;
 }
 
 /* Contenedor para la fecha dinámica */
 .date-container {
-    position: absolute; /* Posicionamiento absoluto dentro del mapa */
-    top: 10px; /* Separación desde el borde superior */
-    right: 10px; /* Separación desde el borde derecho */
-    background-color: rgba(255, 255, 255, 0.9); /* Fondo blanco semitransparente */
-    padding: 8px 15px; /* Espaciado interno */
-    border-radius: 8px; /* Bordes redondeados */
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Sombra */
-    font-size: 14px; /* Tamaño del texto */
-    font-weight: bold; /* Texto en negrita */
-    color: #333; /* Color del texto */
-    z-index: 10; /* Asegura que esté por encima del mapa */
-    font-family: 'Arial', sans-serif; /* Fuente clara y moderna */
-    text-align: center; /* Centra el texto dentro del contenedor */
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 8px 15px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    z-index: 10;
+    font-family: 'Arial', sans-serif;
+    text-align: center;
+}
+
+/* Adaptaciones responsivas */
+@media (max-width: 768px) {
+    .chicago-map {
+        margin: 15px auto;
+        max-width: 90%; /* Reduce el ancho máximo en pantallas pequeñas */
+    }
+
+    .date-container {
+        font-size: 12px; /* Reduce el tamaño del texto en pantallas pequeñas */
+        padding: 6px 12px; /* Ajusta el padding */
+    }
+}
+
+@media (max-width: 480px) {
+    .chicago-map {
+        border: 1px solid #ccc; /* Reduce el borde */
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Reduce la sombra */
+    }
+
+    .date-container {
+        font-size: 10px; /* Texto más pequeño para pantallas muy pequeñas */
+        top: 5px; /* Ajusta la posición */
+        right: 5px;
+        padding: 4px 8px; /* Reduce el padding */
+    }
 }
