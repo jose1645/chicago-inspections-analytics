@@ -39,12 +39,15 @@ const MainCard = ({ totalInspections, passedInspections, failedInspections, insp
                             {Object.entries(inspectionsByMonth).map(([month, count]) => (
                                 <li key={month}>
                                     Mes {month}: {count} inspecciones
+                                    <div className="range">
+                                        <div 
+                                            className="fill" 
+                                            style={{ width: `${(count / totalInspections) * 100}%` }}
+                                        ></div>
+                                    </div>
                                 </li>
                             ))}
                         </ul>
-                        <div className="range">
-                            <div className="fill" style={{ width: `${(count / totalInspections) * 100}%` }}></div>
-                        </div>
                     </div>
                     <div className="secondary-card-section">
                         <h4>Distribución de Riesgo</h4>
