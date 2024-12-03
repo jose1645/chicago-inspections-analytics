@@ -1,6 +1,5 @@
 import React from 'react';
 import MainCard from './MainCard';
-import SubCard from './SubCard';
 import '../styles/KPIContainer.css';
 
 const KPIContainer = ({ kpis }) => {
