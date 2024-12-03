@@ -4,7 +4,7 @@ import Loader from './Loader'; // Componente para mostrar carga
 import KPIContainer from './KPIContainer'; // Contenedor de KPIs
 import ChicagoMap from './ChicagoMap'; // Mapa con puntos de inspección
 import ChicagoHeatMap from './ChicagoHeatMap'; // Mapa de calor
-import './Dashboard.css'; // Estilos específicos para el dashboard
+import '../styles/Dashboard.css'; // Estilos específicos para el dashboard
 
 const Dashboard = () => {
     const [kpis, setKpis] = useState(null);
