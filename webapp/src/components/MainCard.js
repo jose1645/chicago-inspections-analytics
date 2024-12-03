@@ -29,7 +29,7 @@ const MainCard = ({ totalInspections, passedInspections, failedInspections, insp
                 </div>
             </div>
 
-            {/* Tarjeta secundaria (visible al hover) */}
+            {/* Tarjeta secundaria */}
             <div className={`secondary-card ${isHovered ? 'expanded' : ''}`}>
                 <h3>Detalles Adicionales</h3>
                 <div className="secondary-card-content">
@@ -42,6 +42,9 @@ const MainCard = ({ totalInspections, passedInspections, failedInspections, insp
                                 </li>
                             ))}
                         </ul>
+                        <div className="range">
+                            <div className="fill" style={{ width: `${(count / totalInspections) * 100}%` }}></div>
+                        </div>
                     </div>
                     <div className="secondary-card-section">
                         <h4>Distribución de Riesgo</h4>
