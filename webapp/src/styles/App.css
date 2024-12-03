@@ -7,7 +7,7 @@
 
 /* Encabezado */
 .app-header {
-    height: 70vh;
+    height: 40vh;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;

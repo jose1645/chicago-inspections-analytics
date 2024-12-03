@@ -4,7 +4,7 @@ import * as d3 from 'd3';
 import '../styles/Dashboard.css';
 import ChicagoMap from './ChicagoMap';
 import ChicagoHeatMap from './ChicagoHeatMap';
-import Loader from './Loader';
+import Loader from '..styles/Loader.css';
 
 const Dashboard = () => {
     const [kpis, setKpis] = useState(null);
