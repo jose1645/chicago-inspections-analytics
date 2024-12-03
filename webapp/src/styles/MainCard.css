@@ -1,29 +1,85 @@
-.main-card {
+.main-card-container {
     position: relative;
-    width: 250px;
-    height: 130px;
-    border-radius: 25px;
+    width: 300px;
+    margin: 20px auto;
+    transition: all 0.4s ease-in-out;
+}
+
+.main-card {
     background: whitesmoke;
-    color: black;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     text-align: center;
-    padding: 1em;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    transition: 0.4s ease-in-out;
+    transition: background-color 0.4s ease-in-out;
 }
 
-.weather-icon {
-    width: 50px;
-    height: 50px;
-    margin: auto;
+.main-card:hover {
+    background-color: #FFE87C;
+    cursor: pointer;
 }
 
-.main-title {
+.main-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.main-card-item h3 {
+    font-size: 1.2em;
+    margin: 0;
+    color: #333;
+}
+
+.main-card-item p {
     font-size: 1.5em;
-    margin-top: 0.5em;
-    color: #1F2937;
+    margin: 5px 0 0;
+    color: #555;
 }
 
-.main-subtitle {
+.secondary-card {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    height: 0;
+    overflow: hidden;
+    background: white;
+    border-radius: 0 0 15px 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: height 0.4s ease-in-out;
+}
+
+.secondary-card.expanded {
+    height: 200px;
+    padding: 20px;
+}
+
+.secondary-card h3 {
+    font-size: 1.1em;
+    margin: 0 0 10px;
+    color: #333;
+}
+
+.secondary-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.secondary-card-section h4 {
     font-size: 1em;
-    color: #6B7280;
+    margin: 0 0 5px;
+    color: #444;
+}
+
+.secondary-card-section ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.secondary-card-section ul li {
+    font-size: 0.9em;
+    color: #555;
 }
