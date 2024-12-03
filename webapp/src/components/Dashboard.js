@@ -45,7 +45,46 @@ const Dashboard = () => {
         fetchData();
     }, []);
 
-    if (loading) return <div className="dashboard">Cargando datos...</div>;
+    if (loading) return (
+
+        <div className="dashboard">
+        <div className="loader">
+            <div className="circle">
+                <div className="dot"></div>
+                <div className="outline"></div>
+            </div>
+            <div className="circle">
+                <div className="dot"></div>
+                <div className="outline"></div>
+            </div>
+            <div className="circle">
+                <div className="dot"></div>
+                <div className="outline"></div>
+            </div>
+            <div className="circle">
+                <div className="dot"></div>
+                <div className="outline"></div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    );
     if (error) return <div className="dashboard error">{error}</div>;
 
     return (
