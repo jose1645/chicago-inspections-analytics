@@ -4,6 +4,7 @@ import * as d3 from 'd3';
 import '../styles/Dashboard.css';
 import ChicagoMap from './ChicagoMap';
 import ChicagoHeatMap from './ChicagoHeatMap';
+import Loader from './Loader';
 
 const Dashboard = () => {
     const [kpis, setKpis] = useState(null);
@@ -45,46 +46,7 @@ const Dashboard = () => {
         fetchData();
     }, []);
 
-    if (loading) return (
-
-        <div className="dashboard">
-        <div className="loader">
-            <div className="circle">
-                <div className="dot"></div>
-                <div className="outline"></div>
-            </div>
-            <div className="circle">
-                <div className="dot"></div>
-                <div className="outline"></div>
-            </div>
-            <div className="circle">
-                <div className="dot"></div>
-                <div className="outline"></div>
-            </div>
-            <div className="circle">
-                <div className="dot"></div>
-                <div className="outline"></div>
-            </div>
-        </div>
-    </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    );
+    if (loading) return <Loader />;
     if (error) return <div className="dashboard error">{error}</div>;
 
     return (
