@@ -1,5 +1,5 @@
 import React from 'react';
-import Loader from '../styles/Loader.css';
+import '../styles/Loader.css';
 const Loader = () => (
     <div className="loader">
         <div className="circle">
