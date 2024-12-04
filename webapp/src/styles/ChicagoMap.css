@@ -1,4 +1,3 @@
-/* Contenedor del mapa */
 .chicago-map {
     display: block;
     margin: 20px auto;
@@ -6,24 +5,25 @@
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     background-color: #ffffff;
-    width: 100%; /* Asegura que ocupe todo el ancho disponible */
-    max-width: 1200px; /* Ancho máximo en pantallas grandes */
-    height: auto; /* Mantiene la proporción del SVG */
+    width: 100%; /* Ocupa todo el ancho disponible */
+    max-width: 1200px; /* Límite para pantallas grandes */
+    height: 100%; /* Asegura que ocupe toda la altura del contenedor */
+    max-height: 500px; /* Altura máxima para evitar que se desborde */
+    overflow: hidden; /* Evita que contenido desbordado se muestre */
 }
 
-/* Asegura que el SVG se ajuste correctamente */
 .chicago-map svg {
-    width: 100%;
-    height: auto;
+    width: 100%; /* Ajusta el SVG al ancho del contenedor */
+    height: 100%; /* Ajusta el SVG a la altura del contenedor */
+    object-fit: contain; /* Escala el contenido sin deformarlo */
 }
 
-/* Animación para los puntos del mapa */
+/* Puntos en el mapa */
 .chicago-map circle {
     transition: all 0.5s ease-out;
     opacity: 0.8;
 }
 
-/* Efecto hover sobre los puntos */
 .chicago-map circle:hover {
     fill: orange;
     cursor: pointer;
@@ -49,29 +49,31 @@
     text-align: center;
 }
 
-/* Adaptaciones responsivas */
+/* Responsividad */
 @media (max-width: 768px) {
     .chicago-map {
         margin: 15px auto;
-        max-width: 90%; /* Reduce el ancho máximo en pantallas pequeñas */
+        max-width: 90%; /* Reduce el ancho máximo */
+        height: 300px; /* Altura fija para pantallas pequeñas */
     }
 
     .date-container {
-        font-size: 12px; /* Reduce el tamaño del texto en pantallas pequeñas */
-        padding: 6px 12px; /* Ajusta el padding */
+        font-size: 12px; /* Texto más pequeño */
+        padding: 6px 12px;
     }
 }
 
 @media (max-width: 480px) {
     .chicago-map {
         border: 1px solid #ccc; /* Reduce el borde */
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Reduce la sombra */
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        height: 200px; /* Altura más pequeña */
     }
 
     .date-container {
-        font-size: 10px; /* Texto más pequeño para pantallas muy pequeñas */
-        top: 5px; /* Ajusta la posición */
+        font-size: 10px;
+        top: 5px;
         right: 5px;
-        padding: 4px 8px; /* Reduce el padding */
+        padding: 4px 8px;
     }
 }
