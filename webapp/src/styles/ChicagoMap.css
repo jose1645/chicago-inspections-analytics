@@ -7,8 +7,8 @@
     background-color: #ffffff;
     width: 100%; /* Ocupa todo el ancho disponible */
     max-width: 1200px; /* Límite para pantallas grandes */
-    height: 100%; /* Asegura que ocupe toda la altura del contenedor */
-    max-height: 500px; /* Altura máxima para evitar que se desborde */
+    height: auto; /* Ajusta dinámicamente la altura */
+    aspect-ratio: 4 / 3; /* Mantiene proporción de 4:3 */
     overflow: hidden; /* Evita que contenido desbordado se muestre */
 }
 
@@ -50,11 +50,20 @@
 }
 
 /* Responsividad */
+@media (max-width: 1024px) {
+    .chicago-map {
+        max-width: 100%; /* Asegura que el mapa ocupe todo el ancho disponible */
+        height: auto; /* Ajusta dinámicamente la altura */
+        aspect-ratio: 4 / 3; /* Mantiene la proporción en pantallas medianas */
+    }
+}
+
 @media (max-width: 768px) {
     .chicago-map {
         margin: 15px auto;
         max-width: 90%; /* Reduce el ancho máximo */
-        height: 300px; /* Altura fija para pantallas pequeñas */
+        height: auto; /* Ajusta dinámicamente la altura */
+        aspect-ratio: 4 / 3; /* Mantiene la proporción */
     }
 
     .date-container {
@@ -67,7 +76,9 @@
     .chicago-map {
         border: 1px solid #ccc; /* Reduce el borde */
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        height: 200px; /* Altura más pequeña */
+        max-width: 100%; /* Ocupa todo el ancho disponible */
+        height: auto; /* Ajusta dinámicamente la altura */
+        aspect-ratio: 4 / 3; /* Mantiene la proporción */
     }
 
     .date-container {
