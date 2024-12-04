@@ -13,13 +13,14 @@ const ChicagoMap = ({ topoData, inspectionLocations }) => {
             return;
         }
 
-        // Configuración del mapa
+        // Dimensiones del mapa para el `viewBox`
         const width = 800;
         const height = 600;
 
         const svg = d3.select(mapRef.current)
-            .attr('width', width)
-            .attr('height', height);
+            .attr('viewBox', `0 0 ${width} ${height}`) // Agrega el atributo `viewBox`
+            .attr('preserveAspectRatio', 'xMidYMid meet') // Mantiene la proporción
+            .classed('responsive-svg', true); // Clase opcional para estilo adicional
 
         svg.selectAll("*").remove(); // Limpia cualquier render anterior
 
@@ -90,7 +91,7 @@ const ChicagoMap = ({ topoData, inspectionLocations }) => {
     }, [topoData, inspectionLocations]);
 
     return (
-        <div style={{ position: 'relative', width: '800px', height: '600px' }}>
+        <div style={{ position: 'relative', width: '100%', height: '0', paddingBottom: '75%' }}>
             {/* Contenedor del SVG */}
             <svg ref={mapRef} className="chicago-map"></svg>
 

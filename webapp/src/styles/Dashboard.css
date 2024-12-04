@@ -19,24 +19,23 @@
 
 .dashboard-maps {
     display: flex;
-    flex-wrap: wrap; /* Permite que los elementos se ajusten en filas */
-    gap: 20px; /* Espaciado entre los mapas */
-    justify-content: space-between; /* Distribuye uniformemente los mapas */
-    width: 100%;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+    align-items: stretch; /* Asegura que los hijos tengan la misma altura */
 }
 
+
 .map-container {
-    flex: 1 1 calc(50% - 20px); /* Cada mapa ocupa el 50% del contenedor, menos el espaciado */
-    min-width: 300px; /* Ancho mínimo para evitar que los mapas se reduzcan demasiado */
-    height: 300px; /* Altura fija para los mapas */
-    background-color: #fff;
+    flex: 1 1 calc(50% - 20px);
+    min-width: 300px;
+    height: 400px; /* Altura fija para que el mapa se ajuste */
+    display: flex;
+    flex-direction: column;
+    background: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 15px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    text-align: center;
 }
 
 .map-container h3 {
