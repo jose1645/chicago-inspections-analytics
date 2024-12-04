@@ -1,3 +1,4 @@
+/* Contenedor principal del mapa */
 .chicago-map {
     display: block;
     margin: 20px auto;
@@ -10,8 +11,10 @@
     height: auto; /* Ajusta dinámicamente la altura */
     aspect-ratio: 4 / 3; /* Mantiene proporción de 4:3 */
     overflow: hidden; /* Evita que contenido desbordado se muestre */
+    position: relative; /* Requerido para los elementos posicionados dentro del mapa */
 }
 
+/* SVG dentro del mapa */
 .chicago-map svg {
     width: 100%; /* Ajusta el SVG al ancho del contenedor */
     height: 100%; /* Ajusta el SVG a la altura del contenedor */
@@ -20,7 +23,7 @@
 
 /* Puntos en el mapa */
 .chicago-map circle {
-    transition: all 0.5s ease-out;
+    transition: all 0.3s ease-out;
     opacity: 0.8;
 }
 
@@ -30,6 +33,27 @@
     r: 12px;
     stroke: #333;
     stroke-width: 1px;
+}
+
+/* Tooltip dinámico */
+.tooltip {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    pointer-events: none; /* Evita interferencias con el mouse */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transform: translate(-50%, -120%);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Mostrar tooltip */
+.tooltip.visible {
+    opacity: 1;
 }
 
 /* Contenedor para la fecha dinámica */
@@ -49,15 +73,21 @@
     text-align: center;
 }
 
-/* Responsividad */
+/* Responsividad para pantallas medianas */
 @media (max-width: 1024px) {
     .chicago-map {
         max-width: 100%; /* Asegura que el mapa ocupe todo el ancho disponible */
         height: auto; /* Ajusta dinámicamente la altura */
         aspect-ratio: 4 / 3; /* Mantiene la proporción en pantallas medianas */
     }
+
+    .date-container {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
 }
 
+/* Responsividad para pantallas pequeñas */
 @media (max-width: 768px) {
     .chicago-map {
         margin: 15px auto;
@@ -67,15 +97,16 @@
     }
 
     .date-container {
-        font-size: 12px; /* Texto más pequeño */
-        padding: 6px 12px;
+        font-size: 12px;
+        padding: 6px 10px;
     }
 }
 
+/* Responsividad para pantallas muy pequeñas */
 @media (max-width: 480px) {
     .chicago-map {
         border: 1px solid #ccc; /* Reduce el borde */
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Reduce la sombra */
         max-width: 100%; /* Ocupa todo el ancho disponible */
         height: auto; /* Ajusta dinámicamente la altura */
         aspect-ratio: 4 / 3; /* Mantiene la proporción */
@@ -85,6 +116,6 @@
         font-size: 10px;
         top: 5px;
         right: 5px;
-        padding: 4px 8px;
+        padding: 4px 8px; /* Reduce el padding */
     }
 }
