@@ -71,8 +71,15 @@ def existe_archivo_limpio(bucket, ruta_limpia, etag):
 def transformar_ingesta(data):
     logging.info("Iniciando transformación de datos.")
     try:
-        # Convertir los datos en un DataFrame
-        df = pd.DataFrame(data)
+ 
+        if isinstance(data, pd.DataFrame):
+            df = data
+        elif isinstance(data, dict):
+            df = pd.DataFrame.from_records([data])
+        elif isinstance(data, list) and all(isinstance(i, dict) for i in data):
+            df = pd.DataFrame.from_records(data)
+        else:
+            raise ValueError(f"Formato de datos inesperado: {type(data)}")
 
         # Asegurar nombres de columnas uniformes
         df.columns = df.columns.str.strip().str.lower()
@@ -144,6 +151,6 @@ def procesar_archivos(bucket, rutas):
 # Ejecución principal
 if __name__ == "__main__":
     rutas_ingesta = ['ingesta/inicial', 'ingesta/consecutiva']
-    logging.info("Inicio de la ejecución de limpieza diaria.")
+    logging.info("Inicio de la ejecución de limpieza mensual.")
     procesar_archivos(s3_bucket, rutas_ingesta)
     logging.info("Limpieza completada.")
