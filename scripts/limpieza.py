@@ -83,6 +83,10 @@ def transformar_ingesta(data):
 
         # Asegurar nombres de columnas uniformes
         df.columns = df.columns.str.strip().str.lower()
+          # Eliminar la columna 'location' si existe
+        if 'location' in df.columns:
+            logging.info("Eliminando columna redundante 'location'.")
+            df = df.drop(columns=['location'])
 
         # Conversión de fechas
         if 'inspection_date' in df.columns:
