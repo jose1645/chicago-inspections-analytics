@@ -127,7 +127,7 @@ def guardar_datos_s3(bucket, ruta, df, etag):
         os.remove(temp_file_path)
 
 def procesar_archivos(bucket, rutas):
-    ruta_limpia = 'datos_limpios/datos_limpios'
+    ruta_limpia = 'datos_limpios'
     archivos_procesados = 0
     errores = 0
 
