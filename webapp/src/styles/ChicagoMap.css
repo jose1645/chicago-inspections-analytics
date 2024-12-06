@@ -6,19 +6,19 @@
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     background-color: #ffffff;
-    width: 100%; /* Ocupa todo el ancho disponible */
-    max-width: 1200px; /* Límite para pantallas grandes */
-    height: auto; /* Ajusta dinámicamente la altura */
-    aspect-ratio: 4 / 3; /* Mantiene proporción de 4:3 */
-    overflow: hidden; /* Evita que contenido desbordado se muestre */
-    position: relative; /* Requerido para los elementos posicionados dentro del mapa */
+    width: 100%;
+    max-width: 1200px;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    position: relative;
 }
 
 /* SVG dentro del mapa */
 .chicago-map svg {
-    width: 100%; /* Ajusta el SVG al ancho del contenedor */
-    height: 100%; /* Ajusta el SVG a la altura del contenedor */
-    object-fit: contain; /* Escala el contenido sin deformarlo */
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 /* Puntos en el mapa */
@@ -43,7 +43,7 @@
     padding: 10px;
     border-radius: 5px;
     font-size: 12px;
-    pointer-events: none; /* Evita interferencias con el mouse */
+    pointer-events: none;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     z-index: 1000;
     transform: translate(-50%, -120%);
@@ -73,49 +73,43 @@
     text-align: center;
 }
 
-/* Responsividad para pantallas medianas */
-@media (max-width: 1024px) {
-    .chicago-map {
-        max-width: 100%; /* Asegura que el mapa ocupe todo el ancho disponible */
-        height: auto; /* Ajusta dinámicamente la altura */
-        aspect-ratio: 4 / 3; /* Mantiene la proporción en pantallas medianas */
-    }
+/* Leyenda de colores */
+.legend {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: row;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    font-size: 12px;
+    z-index: 1000;
+}
 
-    .date-container {
-        font-size: 12px;
-        padding: 6px 12px;
-    }
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+}
+
+.legend-item span {
+    width: 12px;
+    height: 12px;
+    margin-right: 5px;
+    border-radius: 50%;
 }
 
 /* Responsividad para pantallas pequeñas */
 @media (max-width: 768px) {
-    .chicago-map {
-        margin: 15px auto;
-        max-width: 90%; /* Reduce el ancho máximo */
-        height: auto; /* Ajusta dinámicamente la altura */
-        aspect-ratio: 4 / 3; /* Mantiene la proporción */
-    }
-
-    .date-container {
-        font-size: 12px;
-        padding: 6px 10px;
-    }
-}
-
-/* Responsividad para pantallas muy pequeñas */
-@media (max-width: 480px) {
-    .chicago-map {
-        border: 1px solid #ccc; /* Reduce el borde */
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Reduce la sombra */
-        max-width: 100%; /* Ocupa todo el ancho disponible */
-        height: auto; /* Ajusta dinámicamente la altura */
-        aspect-ratio: 4 / 3; /* Mantiene la proporción */
-    }
-
-    .date-container {
+    .legend {
         font-size: 10px;
-        top: 5px;
-        right: 5px;
-        padding: 4px 8px; /* Reduce el padding */
+        padding: 8px;
+    }
+
+    .tooltip {
+        font-size: 10px;
+        padding: 8px;
     }
 }
