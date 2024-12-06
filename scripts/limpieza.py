@@ -96,9 +96,9 @@ def transformar_ingesta(data):
         df = df.drop_duplicates()
 
         # Eliminar filas con valores nulos en columnas relevantes
-        columnas_relevantes = ['inspection_date', 'results']
+       
+        columnas_relevantes = [col for col in df.columns if col != 'violations']
         df = df.dropna(subset=columnas_relevantes)
-
         logging.info(f"Transformación completada: {df.shape[0]} filas, {df.shape[1]} columnas.")
         return df
     except Exception as e:
