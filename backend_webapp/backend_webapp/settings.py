@@ -32,7 +32,8 @@ ALLOWED_HOSTS = ['localhost',
     '127.0.0.1',
     'chicago-inspections-analytics.synteck.org',
     'api',
-    '[::1]'
+    '[::1]',
+    '3.80.250.45'
 
     ]
 
