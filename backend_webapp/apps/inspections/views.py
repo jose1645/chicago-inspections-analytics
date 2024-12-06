@@ -14,7 +14,7 @@ class KPIs(APIView):
     """
     def get(self, request, *args, **kwargs):
         bucket_name = os.getenv("S3_BUCKET_NAME")
-        file_key = 'datos_limpios/datos_limpios/datos_limpios_2024-11-13_08e32f34859ab66384461bbea8b811ce.pkl'
+        file_key = 'datos_limpios/datos_limpios/datos_limpios_2024-12-05_fdf9135c835ff76c85385884171e2f68.pkl'
 
         try:
             # Cargar el archivo desde S3 como DataFrame
