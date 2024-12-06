@@ -1,16 +1,25 @@
-.choropleth-map {
-  position: relative;
-  width: 800px;
-  height: 600px;
-}
-
+/* Estilo para el tooltip */
 .tooltip {
-  position: absolute;
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
   padding: 10px;
   border-radius: 5px;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
   font-size: 12px;
   pointer-events: none;
+  position: absolute;
   display: none;
+  z-index: 10;
+  transform: translate(-50%, -100%);
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Animación para el tooltip */
+.tooltip.show {
+  display: block;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Animación de transición para los paths */
+path {
+  transition: fill 0.3s ease-in-out, stroke-width 0.3s ease-in-out;
 }

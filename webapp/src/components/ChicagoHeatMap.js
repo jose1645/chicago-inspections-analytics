@@ -47,50 +47,40 @@ const ChoroplethMap = () => {
         const width = 800;
         const height = 600;
         const svg = d3.select(svgRef.current);
-
+    
         // Limpiar contenido previo
         svg.selectAll('*').remove();
-
+    
         // Crear proyección para Chicago
         const projection = d3.geoMercator()
             .center([-87.6298, 41.8781])
             .scale(50000)
             .translate([width / 2, height / 2]);
-
+    
         const path = d3.geoPath().projection(projection);
-
+    
         // Validar datos de inspección
         const inspectionValues = Object.values(inspectionData || {});
         if (inspectionValues.length === 0) {
             console.error('No hay datos de inspección disponibles.');
             return;
         }
-
+    
         // Escala de colores para el choropleth
         const maxInspections = d3.max(inspectionValues, d => (typeof d?.total_inspections === 'number' ? d.total_inspections : 0));
         console.log('Máximo de inspecciones:', maxInspections);
         const colorScale = d3.scaleSequential(d3.interpolateBlues).domain([0, maxInspections || 1]);
-
+    
         // Extraer ZIP codes del TopoJSON
         const zipcodes = topojson.feature(topoData, topoData.objects.zipcodes);
-
-        // Dibujar el mapa
+    
+        // Dibujar el mapa con animaciones
         svg.selectAll('path')
             .data(zipcodes.features)
             .enter()
             .append('path')
             .attr('d', path)
-            .attr('fill', d => {
-                if (!d || !d.properties) {
-                    console.error('Feature inválida o sin propiedades:', d);
-                    return '#ccc'; // Color de relleno por defecto si los datos son inválidos
-                }
-                const zip = d.properties.ZIP;
-                const data = inspectionData[zip];
-                const totalInspections = typeof data?.total_inspections === 'number' ? data.total_inspections : 0;
-                console.log(`ZIP: ${zip}, Inspecciones totales: ${totalInspections}`);
-                return colorScale(totalInspections);
-            })
+            .attr('fill', '#ccc') // Color inicial
             .attr('stroke', '#333')
             .attr('stroke-width', 0.5)
             .on('mouseover', (event, d) => {
@@ -103,16 +93,45 @@ const ChoroplethMap = () => {
                     Failed: ${data.failed_inspections || 'N/A'}
                 `;
                 showTooltip(event.pageX, event.pageY, tooltipData);
+    
+                // Animación en hover
+                d3.select(event.target)
+                    .transition()
+                    .duration(300)
+                    .attr('stroke-width', 2) // Resaltar borde
+                    .attr('opacity', 0.9); // Aumentar opacidad
             })
-            .on('mouseout', hideTooltip);
-
+            .on('mouseout', (event) => {
+                hideTooltip();
+    
+                // Restaurar animación al salir del hover
+                d3.select(event.target)
+                    .transition()
+                    .duration(300)
+                    .attr('stroke-width', 0.5) // Borde original
+                    .attr('opacity', 1); // Opacidad original
+            })
+            .transition() // Transición inicial para el color
+            .duration(1000) // Duración de la transición
+            .attr('fill', d => {
+                if (!d || !d.properties) {
+                    console.error('Feature inválida o sin propiedades:', d);
+                    return '#ccc'; // Color de relleno por defecto si los datos son inválidos
+                }
+                const zip = d.properties.ZIP;
+                const data = inspectionData[zip];
+                const totalInspections = typeof data?.total_inspections === 'number' ? data.total_inspections : 0;
+                console.log(`ZIP: ${zip}, Inspecciones totales: ${totalInspections}`);
+                return colorScale(totalInspections);
+            });
+    
         // Tooltip
         const tooltip = d3.select('#tooltip');
         if (tooltip.empty()) {
             console.error('El elemento tooltip no existe en el DOM.');
             return;
         }
-
+    
         const showTooltip = (x, y, content) => {
             tooltip.style('left', `${x + 10}px`)
                 .style('top', `${y + 10}px`)
@@ -123,7 +142,7 @@ const ChoroplethMap = () => {
             tooltip.style('display', 'none');
         };
     };
-
+    
     if (loading) return <div className="choropleth-map">Cargando datos...</div>;
     if (error) return <div className="choropleth-map error">{error}</div>;
 
