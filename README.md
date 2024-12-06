@@ -109,9 +109,9 @@ Los notebooks en este proyecto son utilizados para realizar análisis explorator
 
 ### Lista de Notebooks
 
-1. **`eda.ipynb`**: Exploración inicial de los datos y generación de visualizaciones descriptivas.
-2. **`data_cleaning.ipynb`**: Desarrollo y pruebas de rutinas de limpieza de datos.
-3. **`ml_model.ipynb`**: Entrenamiento y validación de modelos de machine learning.
+1. **`analis_exploratorio.ipynb`**: Exploración inicial de los datos y generación de visualizaciones descriptivas.
+2. **`analizar_violations.ipynb`**: Tratamiento de la columna llamada violations, tiene mucha informacion de valor.
+3. **`investigar correlaciones con results.ipynb`**: Investigar features ligadas a results.
 
 
 ---
