@@ -1,3 +1,6 @@
 .env
 notebooks/.env
 
+notebooks/arboles_gridsearch.pkl
+notebooks/Random_forest.pkl
+notebooks/logisticregression_gridsearch.pkl
