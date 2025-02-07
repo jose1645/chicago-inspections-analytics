@@ -25,6 +25,7 @@ jobs:
           docker build -t synteck428/my-dataproject-model:latest -f Dockerfile.model .
           docker build -t synteck428/my-dataproject-webapp:latest -f Dockerfile.webapp .
           docker build -t synteck428/my-dataproject-backend_webapp:latest -f Dockerfile.backend_webapp .
+          docker build -t synteck428/my-dataproject-api_flask:latest -f Dockerfile.api_flask .
 
       # 4. Log in to Docker Hub
       - name: Log in to Docker Hub
@@ -37,6 +38,8 @@ jobs:
           docker push synteck428/my-dataproject-model:latest
           docker push synteck428/my-dataproject-webapp:latest
           docker push synteck428/my-dataproject-backend_webapp:latest
+          docker push synteck428/my-dataproject-api_flask:latest
+
 
   deploy:
     runs-on: ubuntu-latest
@@ -81,22 +84,20 @@ jobs:
             docker pull synteck428/my-dataproject-model:latest;
             docker pull synteck428/my-dataproject-webapp:latest;
             docker pull synteck428/my-dataproject-backend_webapp:latest;
-
+            docker pull synteck428/my-dataproject-api_flask:latest;
             echo 'Exportando variables de entorno...';
             export SOCRATA_USERNAME=${{ secrets.SOCRATA_USERNAME }};
             export SOCRATA_PASSWORD=${{ secrets.SOCRATA_PASSWORD }};
             export SOCRATA_APP_TOKEN=${{ secrets.SOCRATA_APP_TOKEN }};
             export S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }};
             export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }};
+            export DATABASE=${{ secrets.DATABASE }};
+            export RELATIONAL_DATABASE_HOST=${{ secrets.RELATIONAL_DATABASE_HOST }};
+            export USER_DATABASE=${{ secrets.USER_DATABASE }};
+            export DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }};
             export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }};
-
-
-
-
-
             docker stop webapp
             docker rm webapp
-
             echo 'Levantando servicios con Docker Compose...';
             /usr/bin/docker-compose -f ~/deploy/docker-compose.yml down --rmi all --remove-orphans;
             /usr/bin/docker-compose -f ~/deploy/docker-compose.yml build --no-cache;

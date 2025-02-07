@@ -50,6 +50,26 @@ services:
     container_name: api
 
 
+
+  api_flask:
+    image: synteck428/my-dataproject-backend_webapp:latest
+    ports:
+      - "7000:5000"
+    environment:
+      - DATABASE
+      - RELATIONAL_DATABASE_HOST
+      - USER_DATABASE
+      - DATABASE_PASSWORD
+      - S3_BUCKET_NAME
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+    networks:
+      - my-network
+    container_name: api_flask
+
+
+
+
 networks:
   my-network:
     driver: bridge
