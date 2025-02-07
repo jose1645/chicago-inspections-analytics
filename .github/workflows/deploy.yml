@@ -72,7 +72,8 @@ jobs:
            
             echo 'docker-compose.yml' > .git/info/sparse-checkout;
             git config pull.rebase false;
-            git pull origin funcional;
+            git pull origin funcional --allow-unrelated-histories;
+
 
             echo 'Archivo docker-compose.yml descargado.';
           "
