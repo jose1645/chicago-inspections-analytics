@@ -43,7 +43,7 @@ services:
       - backend-static:/usr/share/nginx/html/backend-static
     container_name: api
   api_flask:
-    image: synteck428/my-dataproject-backend_webapp:latest
+    image: synteck428/my-dataproject-api_flask:latest
     ports:
       - 7000:5000
     environment:
