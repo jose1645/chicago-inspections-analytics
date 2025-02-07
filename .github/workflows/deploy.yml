@@ -70,11 +70,8 @@ jobs:
             git remote add origin git@github.com:jose1645/chicago-inspections-analytics.git;
             git config core.sparseCheckout true;
             echo 'docker-compose.yml' > .git/info/sparse-checkout;
-            git checkout -- docker-compose.yml
             git config pull.rebase false;
             git pull origin funcional --allow-unrelated-histories;
-
-
             echo 'Archivo docker-compose.yml descargado.';
           "
 
