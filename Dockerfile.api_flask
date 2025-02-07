@@ -4,14 +4,17 @@ FROM python:3.9-slim
 # Establecemos el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiamos los archivos locales de la carpeta api_flask al contenedor
-COPY api_flask/ /app/
+# Copiamos los archivos locales al contenedor
+COPY . /app/
 
 # Instalamos las dependencias necesarias
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Creamos el directorio de logs para que Gunicorn pueda escribir allí
+RUN mkdir -p /app/logs
+
 # Exponemos el puerto en el que correrá la aplicación Flask
 EXPOSE 5000
 
-# Comando para iniciar la aplicación Flask con Gunicorn
+# Comando para iniciar la aplicación Flask
 CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:app", "--access-logfile", "/app/logs/access.log", "--error-logfile", "/app/logs/error.log"]
