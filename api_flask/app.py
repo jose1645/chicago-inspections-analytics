@@ -19,23 +19,27 @@ app = Flask(__name__)
 
 def load_pkl_from_s3():
     try:
-        # Crear un cliente S3 usando boto3
         s3_client = boto3.client(
             's3',
-            aws_access_key_id=os.getenv(ACCESS_KEY_ID),
-            aws_secret_access_key=os.getenv(SECRET_ACCESS_KEY)
+            aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+            aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
         )
         
-        # Obtener el objeto desde S3
-        obj = s3_client.get_object(Bucket=os.getenv('S3_BUCKET_NAME'), Key='results/predictions_score.pkl')
-        
-        # Leer el contenido del archivo pkl
+        obj = s3_client.get_object(Bucket=os.getenv('S3_BUCKET_NAME'), Key='results/predictions_label.pkl')
         pkl_data = obj['Body'].read()
-
-        # Cargar el archivo pkl en un DataFrame usando pandas
-        df = pd.read_pickle(BytesIO(pkl_data))
         
-        return df
+        data = pickle.loads(pkl_data)  # Cargar el diccionario
+        
+        print(f"Tipo de datos cargado: {type(data)}")  # Depuración
+        
+        if isinstance(data, dict) and 'predictions_score' in data:
+            df = pd.DataFrame({'predictions_score': data['predictions_score']})
+            return df  # Convertir a DataFrame antes de regresarlo
+        elif isinstance(data, pd.DataFrame):
+            return data
+        else:
+            print(f"Error: Tipo inesperado {type(data)} en el archivo .pkl")
+            return None
     except Exception as e:
         print(f"Error loading .pkl file from S3: {e}")
         return None
