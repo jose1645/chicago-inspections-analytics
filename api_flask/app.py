@@ -159,7 +159,6 @@ def get_predictions_by_date(date_str):
     else:
         return jsonify({'error': 'No predictions found for this date'}), 404
 
-
 @app.route('/save', methods=['POST'])
 def save():
     try:
@@ -195,17 +194,5 @@ def save():
 
     except Exception as e:
         return jsonify({'message': f"Error: {e}"}), 500
-
-
-
-
-
-    
-    
-    
-    
-    
-
-    
 if __name__ == '__main__':
     app.run(debug=True)
