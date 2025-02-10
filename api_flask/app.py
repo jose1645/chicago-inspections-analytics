@@ -15,6 +15,10 @@ PASSWORD = os.getenv('DATABASE_PASSWORD')
 # Build paths inside the project like this: BASE_DIR / '
 app = Flask(__name__)
 
+import pickle
+import pandas as pd
+import boto3
+import os
 
 def load_pkl_from_s3():
     try:
@@ -23,26 +27,41 @@ def load_pkl_from_s3():
             aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
             aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
         )
+
+        bucket_name = os.getenv('S3_BUCKET_NAME')
+        file_key = 'results/predictions_label.pkl'
         
-        obj = s3_client.get_object(Bucket=os.getenv('S3_BUCKET_NAME'), Key='results/predictions_label.pkl')
+        obj = s3_client.get_object(Bucket=bucket_name, Key=file_key)
         pkl_data = obj['Body'].read()
-        
-        data = pickle.loads(pkl_data)  # Cargar el diccionario
-        
-        print(f"Tipo de datos cargado: {type(data)}")  # Depuración
-        
-        if isinstance(data, dict) and 'predictions_score' in data:
-            df = pd.DataFrame({'predictions_score': data['predictions_score']})
-            return df  # Convertir a DataFrame antes de regresarlo
+
+        try:
+            data = pickle.loads(pkl_data)  # Intentar cargar el objeto desde pickle
+        except Exception as e:
+            print(f"❌ Error deserializando el archivo .pkl: {e}")
+            return None
+
+        print(f"📌 Tipo de datos cargado desde S3: {type(data)}")
+
+        # Si es un diccionario, intentar convertirlo a DataFrame
+        if isinstance(data, dict):
+            if 'predictions_score' in data and isinstance(data['predictions_score'], (list, tuple, pd.Series)):
+                df = pd.DataFrame({'predictions_score': data['predictions_score']})
+                return df
+            else:
+                print("⚠️ El diccionario no contiene 'predictions_score' o el formato es incorrecto.")
+                return None
+
+        # Si ya es un DataFrame, regresarlo directamente
         elif isinstance(data, pd.DataFrame):
             return data
-        else:
-            print(f"Error: Tipo inesperado {type(data)} en el archivo .pkl")
-            return None
-    except Exception as e:
-        print(f"Error loading .pkl file from S3: {e}")
-        return None
 
+        else:
+            print(f"⚠️ Error: Tipo inesperado {type(data)} en el archivo .pkl")
+            return None
+
+    except Exception as e:
+        print(f"❌ Error al cargar el archivo .pkl desde S3: {e}")
+        return None
 
 def get_db_connection():
     try:
