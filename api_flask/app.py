@@ -194,5 +194,7 @@ def save():
 
     except Exception as e:
         return jsonify({'message': f"Error: {e}"}), 500
+    
+    
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)
