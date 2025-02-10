@@ -27,7 +27,7 @@ def load_pkl_from_s3():
         )
         
         # Obtener el objeto desde S3
-        obj = s3_client.get_object(Bucket=os.getenv('S3_BUCKET_NAME'), Key='feature-matrix/feature-matrix.2024-11-22.pkl')
+        obj = s3_client.get_object(Bucket=os.getenv('S3_BUCKET_NAME'), Key='results/predictions_score.pkl')
         
         # Leer el contenido del archivo pkl
         pkl_data = obj['Body'].read()
@@ -110,13 +110,7 @@ def get_eda():
             return jsonify({'error': 'Failed to load .pkl file from S3'}), 500
         
         # Realizar el análisis exploratorio básico
-        eda = {
-            'shape': df.shape,
-            'columns': df.columns.tolist(),
-            'info': df.info(),
-            'describe': df.describe().to_dict(),
-            'missing_values': df.isnull().sum().to_dict()
-        }
+        eda=df.head()
         return jsonify(eda), 200
     except Exception as e:
         return jsonify({'error': f'Failed to process the .pkl file: {str(e)}'}), 500
