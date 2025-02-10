@@ -27,7 +27,7 @@ def load_pkl_from_s3():
         )
         
         # Obtener el objeto desde S3
-        obj = s3_client.get_object(Bucket=os.getenv('S3_BUCKET_NAME'), Key='results/predictions_label.pkl')
+        obj = s3_client.get_object(Bucket=os.getenv('S3_BUCKET_NAME'), Key='feature-matrix/feature-matrix.2024-11-22.pkl')
         
         # Leer el contenido del archivo pkl
         pkl_data = obj['Body'].read()
