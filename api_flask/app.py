@@ -26,7 +26,7 @@ import pandas as pd
 import boto3
 import os
 
-def load_pkl_from_s3():
+def load_pkl_from_s3(file_key):
     load_dotenv()
     try:
         s3_client = boto3.client(
@@ -36,7 +36,6 @@ def load_pkl_from_s3():
         )
 
         bucket_name = os.getenv('S3_BUCKET_NAME')
-        file_key = 'results/predictions_score.pkl'
         
         obj = s3_client.get_object(Bucket=bucket_name, Key=file_key)
         pkl_data = obj['Body'].read()
@@ -64,7 +63,6 @@ def load_pkl_from_s3():
     except Exception as e:
         return None
     
-    
 def get_db_connection():
     try:
         conn = psycopg2.connect(
@@ -90,7 +88,7 @@ def save_to_postgres(df):
 
         # Crear una tabla si no existe
         create_table_query = """
-        CREATE TABLE IF NOT EXISTS predictions_data (
+        CREATE TABLE IF NOT EXISTS predictions (
             id SERIAL PRIMARY KEY,
             date TIMESTAMP,
             predictions_score FLOAT,
@@ -103,7 +101,7 @@ def save_to_postgres(df):
         # Insertar los datos del DataFrame en la tabla
         for index, row in df.iterrows():
             insert_query = """
-            INSERT INTO predictions_data (date, predictions_score, predictions_labels)
+            INSERT INTO predictions (date, predictions_score, predictions_labels)
             VALUES (%s, %s, %s);
             """
             cursor.execute(insert_query, (row['date'], row['predictions_score'], row['predictions_labels']))
@@ -207,7 +205,7 @@ def save():
     
     
     
-    
+
     
 if __name__ == '__main__':
     app.run(debug=True)
