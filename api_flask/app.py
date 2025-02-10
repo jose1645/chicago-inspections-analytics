@@ -12,6 +12,12 @@ HOST = os.getenv('RELATIONAL_DATABASE_HOST')
 DATABASE = os.getenv('DATABASE')
 USER = os.getenv('USER_DATABASE')
 PASSWORD = os.getenv('DATABASE_PASSWORD')
+import boto3
+import pandas as pd
+import os
+import pickle
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / '
 app = Flask(__name__)
 
@@ -21,15 +27,16 @@ import boto3
 import os
 
 def load_pkl_from_s3():
+    load_dotenv()
     try:
         s3_client = boto3.client(
             's3',
-            aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-            aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+            aws_access_key_id=os.getenv('NOTEBOOK_ACCESS_KEY'),
+            aws_secret_access_key=os.getenv('NOTEBOOK_ACCESS_KEY_SECRET')
         )
 
         bucket_name = os.getenv('S3_BUCKET_NAME')
-        file_key = 'results/predictions_label.pkl'
+        file_key = 'results/predictions_score.pkl'
         
         obj = s3_client.get_object(Bucket=bucket_name, Key=file_key)
         pkl_data = obj['Body'].read()
@@ -37,32 +44,27 @@ def load_pkl_from_s3():
         try:
             data = pickle.loads(pkl_data)  # Intentar cargar el objeto desde pickle
         except Exception as e:
-            print(f"❌ Error deserializando el archivo .pkl: {e}")
             return None
 
-        print(f"📌 Tipo de datos cargado desde S3: {type(data)}")
 
         # Si es un diccionario, intentar convertirlo a DataFrame
         if isinstance(data, dict):
-            if 'predictions_score' in data and isinstance(data['predictions_score'], (list, tuple, pd.Series)):
-                df = pd.DataFrame({'predictions_score': data['predictions_score']})
+            if 'predictions_labels' in data and isinstance(data['predictions_labels'], (list, tuple, pd.Series)):
+                df = pd.DataFrame({'predictions_labels': data['predictions_labels']})
                 return df
             else:
-                print("⚠️ El diccionario no contiene 'predictions_score' o el formato es incorrecto.")
-                return None
+                return data
 
         # Si ya es un DataFrame, regresarlo directamente
         elif isinstance(data, pd.DataFrame):
             return data
 
         else:
-            print(f"⚠️ Error: Tipo inesperado {type(data)} en el archivo .pkl")
             return None
-
     except Exception as e:
-        print(f"❌ Error al cargar el archivo .pkl desde S3: {e}")
         return None
-
+    
+    
 def get_db_connection():
     try:
         conn = psycopg2.connect(
@@ -76,6 +78,44 @@ def get_db_connection():
         print(f"Error connecting to the database: {e}")
         return None
 
+
+def save_to_postgres(df):
+    conn = get_db_connection()  # Obtener la conexión a la base de datos
+
+    if conn is None:
+        return "Error: No se pudo conectar a la base de datos.", 500
+
+    try:
+        cursor = conn.cursor()
+
+        # Crear una tabla si no existe
+        create_table_query = """
+        CREATE TABLE IF NOT EXISTS predictions_data (
+            id SERIAL PRIMARY KEY,
+            date TIMESTAMP,
+            predictions_score FLOAT,
+            predictions_labels INT
+        );
+        """
+        cursor.execute(create_table_query)
+        conn.commit()
+
+        # Insertar los datos del DataFrame en la tabla
+        for index, row in df.iterrows():
+            insert_query = """
+            INSERT INTO predictions_data (date, predictions_score, predictions_labels)
+            VALUES (%s, %s, %s);
+            """
+            cursor.execute(insert_query, (row['date'], row['predictions_score'], row['predictions_labels']))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return "Data inserted successfully", 200
+
+    except Exception as e:
+        return f"Error: {e}", 500
 
 # Endpoint /prediction_id
 @app.route('/prediction_id/<int:id>', methods=['GET'])
@@ -121,21 +161,53 @@ def get_predictions_by_date(date_str):
     else:
         return jsonify({'error': 'No predictions found for this date'}), 404
 
-# Endpoint /eda
-@app.route('/eda', methods=['GET'])
-def get_eda():
-    try:
-        # Cargar el archivo pkl desde S3 y transformarlo en DataFrame
-        df = load_pkl_from_s3()
-        
-        if df is None:
-            return jsonify({'error': 'Failed to load .pkl file from S3'}), 500
-        
-        # Realizar el análisis exploratorio básico
-        eda=df.head()
-        return jsonify(eda), 200
-    except Exception as e:
-        return jsonify({'error': f'Failed to process the .pkl file: {str(e)}'}), 500
 
+@app.route('/save', methods=['POST'])
+def save():
+    try:
+        # Cargar los archivos .pkl desde S3
+        path_predictions_score = 'results/predictions_score.pkl'
+        path_predictions_label = 'results/predictions_label.pkl'
+
+        data_score = load_pkl_from_s3(path_predictions_score)
+        data_labels = load_pkl_from_s3(path_predictions_label)
+
+        if data_score is None or data_labels is None:
+            return jsonify({'message': "Error al cargar los archivos desde S3."}), 500
+
+        # Asegurarse de que 'predictions_score' esté presente en data_score
+        if 'predictions_score' in data_score and data_score['predictions_score'] is not None:
+            date = data_score['date']
+            predictions = data_score['predictions_score']
+
+            # Crear el DataFrame de las predicciones
+            df = pd.DataFrame({
+                'date': [date] * len(predictions),  # Repetir la misma fecha para todas las predicciones
+                'predictions_score': predictions
+            })
+
+            # Concatenar con el DataFrame de etiquetas
+            concatenated_df = pd.concat([data_labels, df], axis=1)
+
+            # Guardar el DataFrame concatenado en PostgreSQL
+            message, status_code = save_to_postgres(concatenated_df)
+            return jsonify({'message': message}), status_code
+        else:
+            return jsonify({'message': "La clave 'predictions_score' está ausente o tiene un valor None."}), 500
+
+    except Exception as e:
+        return jsonify({'message': f"Error: {e}"}), 500
+
+
+
+
+
+    
+    
+    
+    
+    
+    
+    
 if __name__ == '__main__':
     app.run(debug=True)
