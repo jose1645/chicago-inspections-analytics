@@ -12,6 +12,8 @@ HOST = os.getenv('RELATIONAL_DATABASE_HOST')
 DATABASE = os.getenv('DATABASE')
 USER = os.getenv('USER_DATABASE')
 PASSWORD = os.getenv('DATABASE_PASSWORD')
+S3_BUCKET_NAME= os.getenv('S3_BUCKET_NAME')
+
 import boto3
 import pandas as pd
 import os
@@ -31,8 +33,8 @@ def load_pkl_from_s3(file_key):
     try:
         s3_client = boto3.client(
             's3',
-            aws_access_key_id=os.getenv('NOTEBOOK_ACCESS_KEY'),
-            aws_secret_access_key=os.getenv('NOTEBOOK_ACCESS_KEY_SECRET')
+            aws_access_key_id=os.getenv(ACCESS_KEY_ID),
+            aws_secret_access_key=os.getenv(SECRET_ACCESS_KEY)
         )
 
         bucket_name = os.getenv('S3_BUCKET_NAME')
