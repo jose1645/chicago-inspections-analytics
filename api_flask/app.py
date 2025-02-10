@@ -5,8 +5,7 @@ import os
 from io import BytesIO
 import psycopg2
 from datetime import datetime
-
-
+import pickle
 ACCESS_KEY_ID=os.getenv('AWS_ACCESS_KEY_ID')
 SECRET_ACCESS_KEY=os.getenv('AWS_SECRET_ACCESS_KEY')
 HOST = os.getenv('RELATIONAL_DATABASE_HOST')
