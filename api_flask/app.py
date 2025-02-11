@@ -152,7 +152,7 @@ def get_predictions_by_date(date_str):
 
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('SELECT inspection_id, prediction_value FROM predictions WHERE prediction_date = %s', (date,))
+    cur.execute('SELECT id, prediction_labels FROM predictions WHERE date = %s', (date,))
     results = cur.fetchall()
     cur.close()
     conn.close()
