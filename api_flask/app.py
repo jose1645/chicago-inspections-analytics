@@ -147,23 +147,33 @@ def get_predictions_by_date(date_str):
     try:
         # Convertir la fecha de string a objeto datetime
         date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        start_date = datetime.combine(date, datetime.min.time())  # Inicio del día
+        end_date = datetime.combine(date, datetime.max.time())  # Fin del día
     except ValueError:
         return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
 
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute('SELECT id, predictions_labels FROM predictions WHERE date = %s', (date,))
-    results = cur.fetchall()
-    cur.close()
-    conn.close()
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(
+            'SELECT id, prediction_labels FROM predictions WHERE date BETWEEN %s AND %s', 
+            (start_date, end_date)
+        )
+        results = cur.fetchall()
+        cur.close()
+        conn.close()
 
-    if results:
-        predictions = [
-            {'inspection_id': row[0], 'prediction_value': row[1]} for row in results
-        ]
-        return jsonify(predictions), 200
-    else:
-        return jsonify({'error': 'No predictions found for this date'}), 404
+        if results:
+            predictions = [
+                {'inspection_id': row[0], 'prediction_value': row[1]} for row in results
+            ]
+            return jsonify(predictions), 200
+        else:
+            return jsonify({'error': 'No predictions found for this date'}), 404
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/save', methods=['POST'])
 def save():
