@@ -1,6 +1,22 @@
 ---
 version: "3.8"
 services:
+
+
+
+  postgres:
+    image: postgres:latest
+    container_name: mi_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: mi_basedatos
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
   ingesta:
     image: synteck428/my-dataproject-ingesta:latest
     environment:
@@ -62,3 +78,5 @@ networks:
     driver: bridge
 volumes:
   backend-static: null
+  pgdata:
+    driver: local

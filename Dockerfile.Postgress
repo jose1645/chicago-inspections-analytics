@@ -1,0 +1,16 @@
+# Usa la imagen oficial de PostgreSQL
+FROM postgres:latest
+
+# Configurar variables de entorno (puedes cambiarlas según necesites)
+ENV POSTGRES_USER=admin
+ENV POSTGRES_PASSWORD=admin123
+ENV POSTGRES_DB=mi_basedatos
+
+# Crear un volumen para la persistencia de datos
+VOLUME ["/var/lib/postgresql/data"]
+
+# Exponer el puerto de PostgreSQL
+EXPOSE 5432
+
+# Comando por defecto para iniciar PostgreSQL
+CMD ["postgres"]
