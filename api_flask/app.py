@@ -156,7 +156,7 @@ def get_predictions_by_date(date_str):
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute(
-            'SELECT id, prediction_labels FROM predictions WHERE date BETWEEN %s AND %s', 
+            'SELECT id, predictions_labels FROM predictions WHERE date BETWEEN %s AND %s', 
             (start_date, end_date)
         )
         results = cur.fetchall()
