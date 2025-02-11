@@ -12,5 +12,5 @@ VOLUME ["/var/lib/postgresql/data"]
 # Exponer el puerto de PostgreSQL
 EXPOSE 5432
 
-# Comando por defecto para iniciar PostgreSQL
+# Comando por defecto para iniciar PostgreSQLa
 CMD ["postgres"]
