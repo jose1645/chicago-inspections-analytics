@@ -174,7 +174,7 @@ def save():
         if data_score is None or data_labels is None:
             return jsonify({'message': "Error al cargar los archivos desde S3."}), 500
 
-        # Asegurarse de que 'predictions_score' esté presente en data_score
+        # Asegurarsae de que 'predictions_score' esté presente en data_score
         if 'predictions_score' in data_score and data_score['predictions_score'] is not None:
             date = data_score['date']
             predictions = data_score['predictions_score']
