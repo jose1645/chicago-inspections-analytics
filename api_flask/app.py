@@ -122,7 +122,7 @@ def get_prediction_by_id(id):
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute('SELECT predictions_labels, date FROM predictions WHERE inspection_id = %s ORDER BY prediction_date DESC LIMIT 1', (id,))
+        cur.execute('SELECT predictions_labels, date FROM predictions WHERE id = %s ORDER BY date DESC LIMIT 1', (id,))
         result = cur.fetchone()
         cur.close()
         conn.close()
