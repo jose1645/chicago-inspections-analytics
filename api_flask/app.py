@@ -117,25 +117,29 @@ def save_to_postgres(df):
     except Exception as e:
         return f"Error: {e}", 500
 
-# Endpoint /prediction_id
 @app.route('/prediction_id/<int:id>', methods=['GET'])
 def get_prediction_by_id(id):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute('SELECT prediction_value, prediction_date FROM predictions WHERE inspection_id = %s ORDER BY prediction_date DESC LIMIT 1', (id,))
-    result = cur.fetchone()
-    cur.close()
-    conn.close()
-    
-    if result:
-        prediction = {
-            'inspection_id': id,
-            'prediction_value': result[0],
-            'prediction_date': result[1].strftime('%Y-%m-%d')
-        }
-        return jsonify(prediction), 200
-    else:
-        return jsonify({'error': 'Prediction not found'}), 404
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute('SELECT predictions_labels, date FROM predictions WHERE inspection_id = %s ORDER BY prediction_date DESC LIMIT 1', (id,))
+        result = cur.fetchone()
+        cur.close()
+        conn.close()
+
+        if result:
+            prediction = {
+                'inspection_id': id,
+                'prediction_labels': result[0],
+                'prediction_date': result[1].strftime('%Y-%m-%d')
+            }
+            return jsonify(prediction), 200
+        else:
+            return jsonify({'error': 'Prediction not found'}), 404
+    except Exception as e:
+        print(f"Error fetching prediction: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
+
 
 # Endpoint /predictions_date
 @app.route('/predictions_date/<date_str>', methods=['GET'])
