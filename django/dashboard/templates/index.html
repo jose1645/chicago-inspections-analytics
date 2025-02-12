@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Monitoreo</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        img { width: 50%; border: 2px solid #ddd; border-radius: 8px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Dashboard de Monitoreo</h1>
+    <h2>Histograma de Scores</h2>
+    <img src="data:image/png;base64,{{ hist_scores }}" alt="Histograma Scores">
+    <h2>Distribución de Etiquetas</h2>
+    <img src="data:image/png;base64,{{ hist_labels }}" alt="Distribución de Etiquetas">
+    <h2>Curva ROC</h2>
+    <img src="data:image/png;base64,{{ roc_curve }}" alt="Curva ROC">
+</body>
+</html>
